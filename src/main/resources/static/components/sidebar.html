@@ -1,0 +1,135 @@
+<!-- Sidebar Component -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 6.5L10.5 2L18 6.5L10.5 11L3 6.5Z" fill="currentColor"/>
+                <path d="M18 6.5V13.5L10.5 18V11L18 6.5Z" fill="currentColor" fill-opacity="0.7"/>
+                <path d="M3 6.5V13.5L10.5 18V11L3 6.5Z" fill="currentColor" fill-opacity="0.4"/>
+            </svg>
+        </div>
+        <h3>ProjectSync</h3>
+    </div>
+
+    <div class="user-compact">
+        <div class="user-avatar small">
+            <span class="avatar-initials">JS</span>
+            <div class="user-status online"></div>
+        </div>
+        <div class="user-info">
+            <h4 id="sidebarUserName">John Smith</h4>
+            <span id="sidebarUserRole">Product Manager</span>
+        </div>
+    </div>
+
+    <div class="sidebar-menu">
+        <div class="menu-category">MAIN</div>
+        <ul>
+            <li class="active">
+                <a href="/dashboard/index.html">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle">
+                    <i class="fas fa-project-diagram"></i>
+                    <span class="menu-text">Projects</span>
+                    <i class="fas fa-chevron-right submenu-arrow"></i>
+                </a>
+                <ul class="submenu">
+                    <li><a href="/project/list.html">All Projects</a></li>
+                    <li><a href="/project/create.html">Create New</a></li>
+                    <li><a href="/project/calendar.html">Calendar</a></li>
+                    <li><a href="/project/gantt.html">Gantt Chart</a></li>
+                </ul>
+            </li>
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span class="menu-text">Issues</span>
+                    <span class="menu-badge">8</span>
+                    <i class="fas fa-chevron-right submenu-arrow"></i>
+                </a>
+                <ul class="submenu">
+                    <li><a href="/issues/list.html">All Issues</a></li>
+                    <li><a href="/issues/create.html">Report Issue</a></li>
+                    <li><a href="/issues/assigned.html">Assigned to Me</a></li>
+                    <li><a href="/issues/reported.html">Reported by Me</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/tasks">
+                    <i class="fas fa-tasks"></i>
+                    <span class="menu-text">My Tasks</span>
+                    <span class="menu-badge alert">3</span>
+                </a>
+            </li>
+            <li>
+                <a href="/calendar">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="menu-text">Calendar</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="menu-category">WORKSPACE</div>
+        <ul>
+            <li>
+                <a href="/documents">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="menu-text">Documents</span>
+                </a>
+            </li>
+            <li>
+                <a href="/files">
+                    <i class="fas fa-folder"></i>
+                    <span class="menu-text">Files</span>
+                    <span class="menu-badge sync">
+            <i class="fas fa-sync-alt"></i>
+          </span>
+                </a>
+            </li>
+            <li>
+                <a href="/teams">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Teams</span>
+                </a>
+            </li>
+            <li>
+                <a href="/messages">
+                    <i class="fas fa-comment-alt"></i>
+                    <span class="menu-text">Messages</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="menu-category">ANALYTICS</div>
+        <ul>
+            <li>
+                <a href="/reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="menu-text">Reports</span>
+                </a>
+            </li>
+            <li>
+                <a href="/analytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="menu-text">Analytics</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="file-sync-status">
+            <div class="sync-indicator synced">
+                <i class="fas fa-check-circle"></i>
+                <span>All files synced</span>
+            </div>
+            <div class="sync-progress">
+                <div class="progress-bar">
+                    <div class="progress" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
