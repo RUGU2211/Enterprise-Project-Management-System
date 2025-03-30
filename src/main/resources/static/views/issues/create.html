@@ -6,15 +6,17 @@
     <title>Create Issue - Project Management System</title>
 
     <!-- Bootstrap CSS -->
-    <link href="../../assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <!-- Custom CSS -->
-    <link href="../../assets/css/style.css" rel="stylesheet">
+    <link href="/epm/assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+<div id="alertPlaceholder" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;"></div>
+
 <!-- Include Header -->
 <div id="header-placeholder"></div>
 
@@ -53,34 +55,61 @@
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="issueAssignedTo" class="form-label">Assign To</label>
-                                <select class="form-select" id="issueAssignedTo">
-                                    <option value="">Select Team Member</option>
-                                    <option value="John Doe">John Doe</option>
-                                    <option value="Jane Smith">Jane Smith</option>
-                                    <option value="Bob Johnson">Bob Johnson</option>
-                                    <option value="Alice Williams">Alice Williams</option>
-                                    <option value="Mike Johnson">Mike Johnson</option>
+                                <label for="issueAssignee" class="form-label">Assign To</label>
+                                <select class="form-select" id="issueAssignee">
+                                    <option value="">Unassigned</option>
+                                    <!-- Team members will be loaded dynamically after selecting a project -->
                                 </select>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="issueStatus" class="form-label">Status *</label>
-                                <select class="form-select" id="issueStatus" required>
-                                    <option value="Open">Open</option>
-                                    <option value="In Progress">In Progress</option>
-                                    <option value="Resolved">Resolved</option>
-                                    <option value="Closed">Closed</option>
+                            <div class="col-md-4 mb-3">
+                                <label for="issueType" class="form-label">Type *</label>
+                                <select class="form-select" id="issueType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="STORY">Story</option>
+                                    <option value="BUG">Bug</option>
+                                    <option value="TASK">Task</option>
+                                    <option value="EPIC">Epic</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label for="issueStatus" class="form-label">Status *</label>
+                                <select class="form-select" id="issueStatus" required>
+                                    <option value="">Select Status</option>
+                                    <option value="TODO" selected>To Do</option>
+                                    <option value="IN_PROGRESS">In Progress</option>
+                                    <option value="IN_REVIEW">In Review</option>
+                                    <option value="DONE">Done</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <label for="issuePriority" class="form-label">Priority *</label>
                                 <select class="form-select" id="issuePriority" required>
-                                    <option value="High">High</option>
-                                    <option value="Medium" selected>Medium</option>
-                                    <option value="Low">Low</option>
+                                    <option value="">Select Priority</option>
+                                    <option value="HIGHEST">Highest</option>
+                                    <option value="HIGH">High</option>
+                                    <option value="MEDIUM" selected>Medium</option>
+                                    <option value="LOW">Low</option>
+                                    <option value="LOWEST">Lowest</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="issueSprint" class="form-label">Sprint</label>
+                                <select class="form-select" id="issueSprint">
+                                    <option value="">Backlog (No Sprint)</option>
+                                    <!-- Sprints will be loaded dynamically after selecting a project -->
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="issueStoryPoints" class="form-label">Story Points</label>
+                                <input type="number" class="form-control" id="issueStoryPoints" min="0" max="100">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="issueDueDate" class="form-label">Due Date</label>
+                                <input type="date" class="form-control" id="issueDueDate">
                             </div>
                         </div>
                         <div class="mb-3">
@@ -96,7 +125,7 @@
                                 <i class="fas fa-times me-1"></i> Cancel
                             </button>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i> Save Issue
+                                <i class="fas fa-save me-1"></i> Create Issue
                             </button>
                         </div>
                     </form>
@@ -110,22 +139,10 @@
 <div id="footer-placeholder"></div>
 
 <!-- Bootstrap Bundle with Popper -->
-<script src="../../assets/js/bootstrap.bundle.min.js"></script>
-
-<!-- jQuery (needed for loading components) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Custom JS -->
-<script src="../../assets/js/script.js"></script>
-<script src="../../js/issues.js"></script>
-
-<!-- Load components -->
-<script>
-    $(function(){
-        $("#header-placeholder").load("../../components/header.html");
-        $("#sidebar-placeholder").load("../../components/sidebar.html");
-        $("#footer-placeholder").load("../../components/footer.html");
-    });
-</script>
+<script src="/epm/assets/js/app.js"></script>
+<script src="/epm/assets/js/issues.js"></script>
 </body>
 </html>

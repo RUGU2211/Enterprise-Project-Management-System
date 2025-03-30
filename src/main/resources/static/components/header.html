@@ -1,0 +1,34 @@
+<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="/epm/views/dashboard/index.html">
+        <i class="fas fa-tasks me-2"></i> Project Management
+    </a>
+    <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="w-100"></div>
+    <div class="navbar-nav">
+        <div class="nav-item text-nowrap d-flex align-items-center">
+            <div id="userInfo" class="text-light me-3">
+                <span class="d-none d-md-inline me-2">Welcome</span>
+                <img src="/epm/assets/img/avatar-placeholder.png" class="avatar-small" alt="User avatar">
+            </div>
+            <div class="dropdown me-3">
+                <a class="nav-link dropdown-toggle px-3" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        3
+                    </span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li><h6 class="dropdown-header">Notifications</h6></li>
+                    <li><a class="dropdown-item" href="#">New comment on task TK-123</a></li>
+                    <li><a class="dropdown-item" href="#">You were assigned to task TK-456</a></li>
+                    <li><a class="dropdown-item" href="#">Task TK-789 status updated</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">View all notifications</a></li>
+                </ul>
+            </div>
+            <a class="nav-link px-3" href="#" id="logoutBtn">Sign out</a>
+        </div>
+    </div>
+</header>

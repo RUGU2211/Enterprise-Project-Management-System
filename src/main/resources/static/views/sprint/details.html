@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprint Details - Project Management System</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link href="/epm/assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div id="alertPlaceholder" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;"></div>
+
+<!-- Include Header -->
+<div id="header-placeholder"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div id="sidebar-placeholder"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- Sprint Header -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <div>
+                    <h1 class="h2" id="sprintName">Sprint Name</h1>
+                    <p class="text-muted mb-0">Project: <a href="#" id="projectLink">Project Name</a></p>
+                </div>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" id="startSprintBtn" class="btn btn-sm btn-success">
+                            <i class="fas fa-play me-1"></i> Start Sprint
+                        </button>
+                        <button type="button" id="completeSprintBtn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-check me-1"></i> Complete Sprint
+                        </button>
+                        <a href="edit.html" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                        <button type="button" id="deleteSprintBtn" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash me-1"></i> Delete
+                        </button>
+                    </div>
+                    <a href="list.html" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Sprints
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sprint Overview -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Sprint Overview</h6>
+                            <span id="sprintStatus" class="badge bg-info">Active</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p><strong>Start Date:</strong> <span id="startDate">01/01/2023</span></p>
+                                    <p><strong>End Date:</strong> <span id="endDate">01/14/2023</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Duration:</strong> <span id="duration">14 days</span></p>
+                                    <p><strong>Time Remaining:</strong> <span id="timeRemaining">7 days</span></p>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="font-weight-bold">Sprint Goal</h6>
+                                <p id="sprintGoal">The sprint goal will be displayed here...</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="font-weight-bold">Sprint Progress</h6>
+                                <div class="progress" style="height: 25px;">
+                                    <div id="sprintProgress" class="progress-bar bg-success" role="progressbar" style="width: 50%"
+                                         aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Sprint Statistics</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-center mb-3">
+                                        <h6>Total Issues</h6>
+                                        <h2 id="totalIssues">0</h2>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center mb-3">
+                                        <h6>Completed</h6>
+                                        <h2 id="completedIssues">0</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="text-center mb-3">
+                                        <h6>Story Points</h6>
+                                        <h2 id="totalStoryPoints">0</h2>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center mb-3">
+                                        <h6>Completed</h6>
+                                        <h2 id="completedStoryPoints">0</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sprint Board -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Sprint Board</h6>
+                    <a href="#" id="manageSprintIssuesBtn" class="btn btn-sm btn-primary">
+                        <i class="fas fa-tasks me-1"></i> Manage Sprint Issues
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- To Do Column -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light text-center">
+                                    <h6 class="m-0">To Do <span class="badge bg-secondary ms-1" id="todoCount">0</span></h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="todoIssues" class="sprint-issues-column">
+                                        <!-- To Do issues will be loaded dynamically -->
+                                        <p class="text-center">Loading issues...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- In Progress Column -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light text-center">
+                                    <h6 class="m-0">In Progress <span class="badge bg-info ms-1" id="inProgressCount">0</span></h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="inProgressIssues" class="sprint-issues-column">
+                                        <!-- In Progress issues will be loaded dynamically -->
+                                        <p class="text-center">Loading issues...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- In Review Column -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light text-center">
+                                    <h6 class="m-0">In Review <span class="badge bg-warning ms-1" id="inReviewCount">0</span></h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="inReviewIssues" class="sprint-issues-column">
+                                        <!-- In Review issues will be loaded dynamically -->
+                                        <p class="text-center">Loading issues...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Done Column -->
+                        <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-light text-center">
+                                    <h6 class="m-0">Done <span class="badge bg-success ms-1" id="doneCount">0</span></h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="doneIssues" class="sprint-issues-column">
+                                        <!-- Done issues will be loaded dynamically -->
+                                        <p class="text-center">Loading issues...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Burndown Chart -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Burndown Chart</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="burndownChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Manage Sprint Issues Modal -->
+<div class="modal fade" id="manageSprintIssuesModal" tabindex="-1" aria-labelledby="manageSprintIssuesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manageSprintIssuesModalLabel">Manage Sprint Issues</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Sprint Issues</h6>
+                        <div class="list-group" id="sprintIssuesList">
+                            <!-- Sprint issues will be loaded dynamically -->
+                            <div class="list-group-item text-center">Loading issues...</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Backlog Issues</h6>
+                        <div class="list-group" id="backlogIssuesList">
+                            <!-- Backlog issues will be loaded dynamically -->
+                            <div class="list-group-item text-center">Loading issues...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Footer -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Custom JS -->
+<script src="/epm/assets/js/app.js"></script>
+<script src="/epm/assets/js/sprint.js"></script>
+</body>
+</html>
