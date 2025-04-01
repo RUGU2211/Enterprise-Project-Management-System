@@ -3,6 +3,15 @@
 <head>
     <meta http-equiv="refresh" content="0; url=/epm/views/auth/login.html">
     <title>Redirecting...</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.appHelpers && window.ComponentLoader) {
+                ComponentLoader.loadAllComponents();
+            } else {
+                console.warn("Required libraries not loaded. Components may not display correctly.");
+            }
+        });
+    </script>
 </head>
 <body>
 <p>Redirecting to login page...</p>

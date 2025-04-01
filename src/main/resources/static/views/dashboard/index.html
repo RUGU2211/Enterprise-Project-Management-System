@@ -16,6 +16,15 @@
 
     <!-- Custom CSS -->
     <link href="/epm/assets/css/style.css" rel="stylesheet">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.appHelpers && window.ComponentLoader) {
+                ComponentLoader.loadAllComponents();
+            } else {
+                console.warn("Required libraries not loaded. Components may not display correctly.");
+            }
+        });
+    </script>
 </head>
 <body>
 <div id="alertPlaceholder" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;"></div>

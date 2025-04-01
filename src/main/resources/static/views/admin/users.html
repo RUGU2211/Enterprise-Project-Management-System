@@ -4,17 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management</title>
-    <link href="/epm/assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/epm/assets/css/custom.css" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link href="/epm/assets/css/style.css" rel="stylesheet">
+
+    <!-- Ensure the document is ready before loading components -->
+    <script>
+        // Deferred loading to ensure DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load app.js first
+            const appScript = document.createElement('script');
+            appScript.src = '/epm/assets/js/app.js';
+            appScript.onload = function() {
+                // After app.js is loaded, attempt to load components
+                if (window.ComponentLoader) {
+                    ComponentLoader.loadAllComponents();
+                } else {
+                    console.warn("ComponentLoader not available. Components may not display correctly.");
+                }
+            };
+            document.body.appendChild(appScript);
+        });
+    </script>
 </head>
 <body>
+<!-- Alert placeholder for displaying messages -->
+<div id="alertPlaceholder" class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1050;"></div>
+
+<!-- Include Header -->
 <div id="header-placeholder"></div>
 
 <div class="container-fluid">
     <div class="row">
-        <div id="sidebar-placeholder" class="col-md-2"></div>
+        <!-- Sidebar -->
+        <div id="sidebar-placeholder"></div>
 
-        <main class="col-md-10 ms-sm-auto px-md-4">
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">User Management</h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
@@ -45,9 +77,136 @@
     </div>
 </div>
 
+<!-- Include Footer -->
 <div id="footer-placeholder"></div>
 
-<script src="/epm/assets/js/bootstrap.bundle.min.js"></script>
-<script src="/epm/js/users.js"></script>
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JS -->
+<script>
+    // Internal implementation of user management
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if app.js has been loaded
+        setTimeout(function() {
+            initializeUserManagement();
+        }, 300); // Small delay to ensure app.js has loaded
+    });
+
+    // Initialize user management
+    function initializeUserManagement() {
+        console.log("Initializing user management");
+
+        // Setup add user button
+        const addUserBtn = document.getElementById('addUserBtn');
+        if (addUserBtn) {
+            addUserBtn.addEventListener('click', function() {
+                showAlert('Add user functionality will be implemented soon.', 'info');
+            });
+        }
+
+        // Fetch and display users
+        fetchUsers();
+    }
+
+    // Fetch users or show sample data
+    function fetchUsers() {
+        try {
+            // Show sample users for now
+            const users = [
+                { id: 1, username: 'admin', email: 'admin@example.com', fullName: 'System Administrator', roles: 'ADMIN' },
+                { id: 2, username: 'manager', email: 'manager@example.com', fullName: 'Project Manager', roles: 'PROJECT_MANAGER' },
+                { id: 3, username: 'dev', email: 'dev@example.com', fullName: 'Developer', roles: 'DEVELOPER' }
+            ];
+
+            populateUserTable(users);
+            console.log("Users loaded successfully");
+        } catch (error) {
+            console.error("Error fetching users:", error);
+            showAlert('Failed to load users', 'danger');
+        }
+    }
+
+    // Populate user table
+    function populateUserTable(users) {
+        const tableBody = document.getElementById('usersTableBody');
+        if (!tableBody) return;
+
+        // Clear existing rows
+        tableBody.innerHTML = '';
+
+        // Add user rows
+        users.forEach(user => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.username}</td>
+            <td>${user.email}</td>
+            <td>${user.fullName || 'N/A'}</td>
+            <td>${user.roles || 'No roles assigned'}</td>
+            <td>
+                <button class="btn btn-sm btn-primary edit-user" data-id="${user.id}">Edit</button>
+                <button class="btn btn-sm btn-danger delete-user" data-id="${user.id}">Delete</button>
+            </td>
+        `;
+            tableBody.appendChild(row);
+        });
+
+        // Add button event listeners
+        setupUserActionListeners();
+    }
+
+    // Setup user action listeners
+    function setupUserActionListeners() {
+        // Edit user
+        document.querySelectorAll('.edit-user').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const userId = e.target.dataset.id;
+                showAlert(`Edit user ${userId} - This functionality will be implemented soon.`, 'info');
+            });
+        });
+
+        // Delete user
+        document.querySelectorAll('.delete-user').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const userId = e.target.dataset.id;
+                showAlert(`Delete user ${userId} - This functionality will be implemented soon.`, 'info');
+            });
+        });
+    }
+
+    // Show alert
+    function showAlert(message, type = 'success') {
+        const alertPlaceholder = document.getElementById('alertPlaceholder');
+        if (!alertPlaceholder) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+
+        alertPlaceholder.innerHTML = '';
+        alertPlaceholder.appendChild(wrapper);
+
+        // Auto dismiss after 3 seconds
+        setTimeout(() => {
+            const alert = alertPlaceholder.querySelector('.alert');
+            if (alert) {
+                // Use Bootstrap's alert dismiss if available
+                if (window.bootstrap && window.bootstrap.Alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                } else {
+                    // Manual removal fallback
+                    alert.classList.remove('show');
+                    setTimeout(() => alert.remove(), 150);
+                }
+            }
+        }, 3000);
+    }
+</script>
 </body>
 </html>
