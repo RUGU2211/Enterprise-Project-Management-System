@@ -54,6 +54,10 @@ public class Project {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<Sprint> sprints = new HashSet<>();
 
+    public Object getStatus() {
+        return null;
+    }
+
     public enum ProjectType {
         SCRUM, KANBAN
     }

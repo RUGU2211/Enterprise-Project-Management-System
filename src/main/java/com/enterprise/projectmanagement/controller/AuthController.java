@@ -56,7 +56,7 @@ public class AuthController {
         }
 
         // Create user with ROLE_USER by default
-        userService.createUser(user, "USER");
+        userService.createUser(user);
 
         return "redirect:/login?registered.html";
     }

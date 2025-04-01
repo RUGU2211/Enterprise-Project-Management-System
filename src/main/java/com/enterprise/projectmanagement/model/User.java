@@ -35,4 +35,8 @@ public class User {
     public boolean isEnabled() {
         return true;
     }
+
+    public Object getAvatarUrl() {
+        return null;
+    }
 }

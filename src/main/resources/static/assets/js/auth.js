@@ -1,15 +1,19 @@
 // auth.js - Authentication JS file
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("Auth.js loaded and initializing");
+
     // Check if we're on login page
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
+        console.log("Login form found, adding submit handler");
         loginForm.addEventListener('submit', handleLogin);
     }
 
     // Check if we're on register page
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
+        console.log("Register form found, adding submit handler");
         registerForm.addEventListener('submit', handleRegister);
         setupPasswordValidation();
     }
@@ -21,11 +25,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const type = urlParams.get('type') || 'info';
 
     if (message) {
-        showAlert(decodeURIComponent(message), type);
+        console.log("URL message parameter found:", message);
+        displayAlert(decodeURIComponent(message), type);
     }
 
     if (error) {
-        showAlert(decodeURIComponent(error), 'danger');
+        console.log("URL error parameter found:", error);
+        displayAlert(decodeURIComponent(error), 'danger');
     }
 
     // Remove parameters from URL
@@ -35,55 +41,63 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Handle login form submission
+// Handle login form submission - updated for session-based auth
 async function handleLogin(e) {
     e.preventDefault();
+    console.log("Login form submitted");
 
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
+    const rememberMe = document.getElementById('rememberMe')?.checked || false;
 
     // Validate input
     if (!username || !password) {
-        showAlert('Please enter both username and password', 'warning');
+        displayAlert('Please enter both username and password', 'warning');
         return;
     }
 
-    showAlert('Logging in...', 'info');
+    displayAlert('Logging in...', 'info');
 
     try {
-        const response = await fetch('/epm/api/auth/login', {
+        // Use the standard form login endpoint for Spring Security
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('password', password);
+        formData.append('remember-me', rememberMe);
+
+        console.log("Sending login request to Spring Security endpoint");
+        const response = await fetch('/epm/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                username,
-                password,
-                rememberMe
-            })
+            body: formData,
+            credentials: 'include', // Important for session cookies
+            redirect: 'manual' // Handle redirects manually
         });
 
-        if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.message || 'Login failed');
+        console.log("Login response status:", response.status);
+
+        // For form-based authentication, a 302 redirect is actually success
+        if (response.status === 302 || response.ok) {
+            console.log("Login successful, redirecting to dashboard");
+            // Clear any previous token
+            localStorage.removeItem('auth_token');
+
+            // Redirect to dashboard
+            window.location.href = '/epm/views/dashboard/index.html?message=Login successful';
+            return;
         }
 
-        const data = await response.json();
-
-        // Store the token
-        localStorage.setItem('auth_token', data.token);
-
-        // Redirect to dashboard
-        window.location.href = '/epm/views/dashboard/index.html?message=Login successful';
+        // Handle login error
+        displayAlert('Login failed. Please check your credentials.', 'danger');
     } catch (error) {
-        showAlert(error.message || 'Login failed. Please check your credentials.', 'danger');
+        console.error("Login error:", error);
+        displayAlert(error.message || 'Login failed. Please check your credentials.', 'danger');
     }
 }
 
 // Handle register form submission
 async function handleRegister(e) {
     e.preventDefault();
+    console.log("Register form submitted");
 
     const firstName = document.getElementById('firstName').value;
     const lastName = document.getElementById('lastName').value;
@@ -95,28 +109,29 @@ async function handleRegister(e) {
 
     // Validate input
     if (!firstName || !lastName || !email || !username || !password) {
-        showAlert('Please fill in all required fields', 'warning');
+        displayAlert('Please fill in all required fields', 'warning');
         return;
     }
 
     if (password !== confirmPassword) {
-        showAlert('Passwords do not match', 'danger');
+        displayAlert('Passwords do not match', 'danger');
         return;
     }
 
     if (!validatePassword(password)) {
-        showAlert('Password does not meet requirements', 'danger');
+        displayAlert('Password does not meet requirements', 'danger');
         return;
     }
 
     if (!termsCheck) {
-        showAlert('You must agree to the Terms of Service and Privacy Policy', 'warning');
+        displayAlert('You must agree to the Terms of Service and Privacy Policy', 'warning');
         return;
     }
 
-    showAlert('Creating your account...', 'info');
+    displayAlert('Creating your account...', 'info');
 
     try {
+        console.log("Sending registration request");
         const response = await fetch('/epm/api/auth/register', {
             method: 'POST',
             headers: {
@@ -130,20 +145,32 @@ async function handleRegister(e) {
             })
         });
 
+        console.log("Registration response status:", response.status);
+
         if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.message || 'Registration failed');
+            let errorMsg = 'Registration failed';
+            try {
+                const data = await response.json();
+                errorMsg = data.message || errorMsg;
+            } catch (e) {
+                console.error("Could not parse error response:", e);
+            }
+            throw new Error(errorMsg);
         }
 
         // Redirect to login page with success message
+        console.log("Registration successful, redirecting to login page");
         window.location.href = 'login.html?message=Registration successful. Please login with your new account&type=success';
     } catch (error) {
-        showAlert(error.message || 'Registration failed. Please try again.', 'danger');
+        console.error("Registration error:", error);
+        displayAlert(error.message || 'Registration failed. Please try again.', 'danger');
     }
 }
 
 // Set up password validation
 function setupPasswordValidation() {
+    console.log("Setting up password validation");
+
     const passwordInput = document.getElementById('password');
     if (passwordInput) {
         passwordInput.addEventListener('input', function() {
@@ -167,6 +194,8 @@ function setupPasswordValidation() {
 
 // Validate password strength
 function validatePassword(password) {
+    console.log("Validating password strength");
+
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
@@ -230,10 +259,22 @@ function updatePasswordStrength(password) {
     `;
 }
 
-// Show alert message
-function showAlert(message, type = 'success') {
+// Renamed from showAlert to displayAlert to avoid conflicts
+function displayAlert(message, type = 'success') {
+    console.log(`Showing alert: ${message} (${type})`);
+
+    // First try to use the global showAlert if it exists (from app.js)
+    if (window.appHelpers && typeof window.appHelpers.showAlert === 'function') {
+        window.appHelpers.showAlert(message, type);
+        return;
+    }
+
+    // Fallback to our own implementation if global function not available
     const alertPlaceholder = document.getElementById('alertPlaceholder');
-    if (!alertPlaceholder) return;
+    if (!alertPlaceholder) {
+        console.warn("Alert placeholder not found");
+        return;
+    }
 
     const wrapper = document.createElement('div');
     wrapper.innerHTML = `
@@ -249,8 +290,14 @@ function showAlert(message, type = 'success') {
     // Auto dismiss after 5 seconds
     setTimeout(() => {
         if (wrapper.querySelector('.alert')) {
-            const alert = new bootstrap.Alert(wrapper.querySelector('.alert'));
-            alert.close();
+            try {
+                const alert = new bootstrap.Alert(wrapper.querySelector('.alert'));
+                alert.close();
+            } catch (error) {
+                console.error("Error closing alert:", error);
+                // Fallback if bootstrap Alert isn't available
+                wrapper.querySelector('.alert')?.remove();
+            }
         }
     }, 5000);
 }

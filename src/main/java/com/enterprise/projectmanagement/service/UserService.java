@@ -1,11 +1,9 @@
 package com.enterprise.projectmanagement.service;
 
-import com.enterprise.projectmanagement.config.SecurityConfig;
 import com.enterprise.projectmanagement.model.Role;
 import com.enterprise.projectmanagement.model.User;
 import com.enterprise.projectmanagement.repository.RoleRepository;
 import com.enterprise.projectmanagement.repository.UserRepository;
-import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -46,11 +44,12 @@ public class UserService {
     }
 
     @Transactional
-    public User createUser(User user, String roleName) {
+    public User createUser(User user) {
         // Encode password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         // Assign role
+        String roleName = "";
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
 
@@ -62,7 +61,7 @@ public class UserService {
     }
 
     @Transactional
-    public User updateUser(User user) {
+    public User updateUser(Long id, User user) {
         return userRepository.save(user);
     }
 
