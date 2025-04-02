@@ -454,10 +454,18 @@ async function loadProjectForEdit() {
 // Setup project form
 async function setupProjectForm() {
     try {
-        // Load users for lead and members selection
-        const users = await window.appHelpers.apiRequest('/users');
+        console.log("Setting up project form");
 
-        if (!users) return;
+        // Fallback users data
+        const fallbackUsers = [
+            { id: 1, fullName: 'Sample User', username: 'user1' }
+        ];
+
+        // Load users for lead and members selection
+        const usersResponse = await window.appHelpers.apiRequest('/users');
+        const users = usersResponse?.users || fallbackUsers;
+
+        console.log("Users loaded:", users);
 
         // Populate lead select
         const leadSelect = document.getElementById('projectLead');
@@ -501,9 +509,11 @@ async function setupProjectForm() {
         if (addTeamMemberBtn) {
             addTeamMemberBtn.addEventListener('click', openAddMemberDialog);
         }
+
+        console.log("Project form setup complete");
     } catch (error) {
         console.error('Error setting up project form:', error);
-        showAlert('Failed to load form data. Please try again later.', 'danger');
+        window.appHelpers.showAlert('Failed to load form data. Please try again later.', 'danger');
     }
 }
 

@@ -77,12 +77,19 @@ async function loadDashboardData() {
 
         // Load all dashboard sections in parallel
         console.log("Loading dashboard sections in parallel");
-        await Promise.allSettled([
+        const results = await Promise.allSettled([
             loadStatistics(),
             loadCharts(),
             loadRecentProjects(),
             loadAssignedIssues()
         ]);
+
+        // Check for any rejected promises
+        results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                console.error(`Error in dashboard section ${index}:`, result.reason);
+            }
+        });
 
         console.log("Dashboard data loading complete");
     } catch (error) {
@@ -97,7 +104,7 @@ async function fetchWithFallback(endpoint, fallbackData) {
     try {
         if (window.appHelpers?.apiRequest) {
             const response = await window.appHelpers.apiRequest(endpoint);
-            if (response) return response;
+            return response || fallbackData;
         }
 
         // Try a direct fetch with session credentials as fallback
@@ -111,7 +118,8 @@ async function fetchWithFallback(endpoint, fallbackData) {
         });
 
         if (response.ok) {
-            return await response.json();
+            const data = await response.json();
+            return data;
         }
 
         console.log(`API request to ${endpoint} failed, using fallback data`);
@@ -126,159 +134,141 @@ async function fetchWithFallback(endpoint, fallbackData) {
 async function loadStatistics() {
     console.log("Loading dashboard statistics");
 
-    try {
-        // Fallback stats data for testing if API fails
-        const fallbackStats = {
-            totalProjects: 0,
-            openIssues: 0,
-            completedIssues: 0,
-            upcomingDeadlines: 0,
-            projectCompletionPercentage: 0
-        };
+    // Fallback stats data for testing if API fails
+    const fallbackStats = {
+        totalProjects: 0,
+        openIssues: 0,
+        completedIssues: 0,
+        upcomingDeadlines: 0,
+        projectCompletionPercentage: 0
+    };
 
-        const stats = await fetchWithFallback('/dashboard/stats', fallbackStats);
-        console.log("Statistics loaded:", stats);
+    const stats = await fetchWithFallback('/dashboard/stats', fallbackStats);
+    console.log("Statistics loaded:", stats);
 
-        // Update statistics
-        const totalProjects = document.getElementById('totalProjects');
-        if (totalProjects) {
-            totalProjects.textContent = stats.totalProjects || 0;
+    // Update statistics
+    const updateElementText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value || 0;
         }
+    };
 
-        const openIssues = document.getElementById('openIssues');
-        if (openIssues) {
-            openIssues.textContent = stats.openIssues || 0;
-        }
+    updateElementText('totalProjects', stats.totalProjects);
+    updateElementText('openIssues', stats.openIssues);
+    updateElementText('completedIssues', stats.completedIssues);
+    updateElementText('upcomingDeadlines', stats.upcomingDeadlines);
 
-        const completedIssues = document.getElementById('completedIssues');
-        if (completedIssues) {
-            completedIssues.textContent = stats.completedIssues || 0;
-        }
-
-        const upcomingDeadlines = document.getElementById('upcomingDeadlines');
-        if (upcomingDeadlines) {
-            upcomingDeadlines.textContent = stats.upcomingDeadlines || 0;
-        }
-
-        // Update progress bars
-        const projectProgress = document.getElementById('overallProjectProgress');
-        if (projectProgress) {
-            const percentage = stats.projectCompletionPercentage || 0;
-            projectProgress.style.width = `${percentage}%`;
-            projectProgress.textContent = `${percentage}%`;
-            projectProgress.setAttribute('aria-valuenow', percentage);
-        }
-
-        console.log("Statistics updated successfully");
-    } catch (error) {
-        console.error('Error loading statistics:', error);
-        // Continue loading other parts
+    // Update progress bars
+    const projectProgress = document.getElementById('overallProjectProgress');
+    if (projectProgress) {
+        const percentage = stats.projectCompletionPercentage || 0;
+        projectProgress.style.width = `${percentage}%`;
+        projectProgress.textContent = `${percentage}%`;
+        projectProgress.setAttribute('aria-valuenow', percentage);
     }
+
+    console.log("Statistics updated successfully");
 }
 
 // Load dashboard charts
 async function loadCharts() {
     console.log("Loading dashboard charts");
 
-    try {
-        // Fallback chart data for testing if API fails
-        const fallbackChartData = {
-            projectCompletion: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                data: [0, 10, 20, 30, 40, 50]
-            },
-            issueDistribution: {
-                labels: ['To Do', 'In Progress', 'In Review', 'Done'],
-                data: [25, 25, 25, 25]
-            }
-        };
+    // Fallback chart data for testing if API fails
+    const fallbackChartData = {
+        projectCompletion: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            data: [0, 10, 20, 30, 40, 50]
+        },
+        issueDistribution: {
+            labels: ['To Do', 'In Progress', 'In Review', 'Done'],
+            data: [25, 25, 25, 25]
+        }
+    };
 
-        const chartData = await fetchWithFallback('/dashboard/charts', fallbackChartData);
-        console.log("Chart data loaded:", chartData);
+    const chartData = await fetchWithFallback('/dashboard/charts', fallbackChartData);
+    console.log("Chart data loaded:", chartData);
 
-        // Project completion chart
-        const projectCompletionCtx = document.getElementById('projectCompletionChart');
-        if (projectCompletionCtx && chartData.projectCompletion) {
-            console.log("Creating project completion chart");
-            try {
-                new Chart(projectCompletionCtx, {
-                    type: 'line',
-                    data: {
-                        labels: chartData.projectCompletion.labels,
-                        datasets: [{
-                            label: 'Project Completion',
-                            data: chartData.projectCompletion.data,
-                            fill: false,
-                            borderColor: 'rgb(78, 115, 223)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                ticks: {
-                                    callback: function(value) {
-                                        return value + '%';
-                                    }
+    // Project completion chart
+    const projectCompletionCtx = document.getElementById('projectCompletionChart');
+    if (projectCompletionCtx && chartData.projectCompletion) {
+        console.log("Creating project completion chart");
+        try {
+            new Chart(projectCompletionCtx, {
+                type: 'line',
+                data: {
+                    labels: chartData.projectCompletion.labels,
+                    datasets: [{
+                        label: 'Project Completion',
+                        data: chartData.projectCompletion.data,
+                        fill: false,
+                        borderColor: 'rgb(78, 115, 223)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
                                 }
                             }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return 'Completion: ' + context.parsed.y + '%';
-                                    }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Completion: ' + context.parsed.y + '%';
                                 }
                             }
                         }
                     }
-                });
-                console.log("Project completion chart created successfully");
-            } catch (chartError) {
-                console.error("Error creating project completion chart:", chartError);
-            }
+                }
+            });
+            console.log("Project completion chart created successfully");
+        } catch (chartError) {
+            console.error("Error creating project completion chart:", chartError);
         }
+    }
 
-        // Issue distribution chart
-        const issueDistributionCtx = document.getElementById('issueDistributionChart');
-        if (issueDistributionCtx && chartData.issueDistribution) {
-            console.log("Creating issue distribution chart");
-            try {
-                new Chart(issueDistributionCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: chartData.issueDistribution.labels,
-                        datasets: [{
-                            data: chartData.issueDistribution.data,
-                            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
-                            hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a'],
-                            hoverBorderColor: "rgba(234, 236, 244, 1)",
-                        }]
+    // Issue distribution chart
+    const issueDistributionCtx = document.getElementById('issueDistributionChart');
+    if (issueDistributionCtx && chartData.issueDistribution) {
+        console.log("Creating issue distribution chart");
+        try {
+            new Chart(issueDistributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.issueDistribution.labels,
+                    datasets: [{
+                        data: chartData.issueDistribution.data,
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                        hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a'],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                            }
-                        },
-                        cutout: '70%'
-                    }
-                });
-                console.log("Issue distribution chart created successfully");
-            } catch (chartError) {
-                console.error("Error creating issue distribution chart:", chartError);
-            }
+                    cutout: '70%'
+                }
+            });
+            console.log("Issue distribution chart created successfully");
+        } catch (chartError) {
+            console.error("Error creating issue distribution chart:", chartError);
         }
-    } catch (error) {
-        console.error('Error loading charts:', error);
-        // Continue loading other parts
     }
 }
 
@@ -286,125 +276,119 @@ async function loadCharts() {
 async function loadRecentProjects() {
     console.log("Loading recent projects");
 
-    try {
-        // Fallback projects data for testing if API fails
-        const fallbackProjects = [
-            {
-                id: 1,
-                name: "Sample Project",
-                lead: { fullName: "Project Lead" },
-                type: "SCRUM",
-                createdAt: new Date().toISOString(),
-                issues: []
-            }
-        ];
-
-        const projects = await fetchWithFallback('/projects?recent=true', fallbackProjects);
-        console.log("Recent projects loaded:", projects);
-
-        const projectsTableBody = document.getElementById('projectsTableBody');
-        if (!projectsTableBody) {
-            console.warn("Projects table body element not found");
-            return;
+    // Fallback projects data for testing if API fails
+    const fallbackProjects = [
+        {
+            id: 1,
+            name: "Sample Project",
+            lead: { fullName: "Project Lead" },
+            type: "SCRUM",
+            createdAt: new Date().toISOString(),
+            issues: []
         }
+    ];
 
-        projectsTableBody.innerHTML = '';
+    const response = await fetchWithFallback('/projects?recent=true', { projects: fallbackProjects });
+    const projects = response.projects || fallbackProjects;
 
-        if (projects.length === 0) {
-            console.log("No projects available");
-            projectsTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No projects available</td></tr>';
-            return;
-        }
+    console.log("Recent projects loaded:", projects);
 
-        projects.forEach(project => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><a href="../project/details.html?id=${project.id}">${project.name}</a></td>
-                <td>${project.lead ? project.lead.fullName : 'Unassigned'}</td>
-                <td>${getProjectStatusBadge(project.type)}</td>
-                <td>${window.appHelpers?.formatDate(project.createdAt) || new Date(project.createdAt).toLocaleDateString()}</td>
-                <td>
-                    <div class="progress">
-                        <div class="progress-bar bg-info" role="progressbar" style="width: ${getProjectProgress(project)}%" 
-                            aria-valuenow="${getProjectProgress(project)}" aria-valuemin="0" aria-valuemax="100">
-                            ${getProjectProgress(project)}%
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <a href="../project/details.html?id=${project.id}" class="btn btn-info btn-sm">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                </td>
-            `;
-
-            projectsTableBody.appendChild(row);
-        });
-
-        console.log("Projects table updated successfully");
-    } catch (error) {
-        console.error('Error loading recent projects:', error);
-        // Continue loading other parts
+    const projectsTableBody = document.getElementById('projectsTableBody');
+    if (!projectsTableBody) {
+        console.warn("Projects table body element not found");
+        return;
     }
+
+    projectsTableBody.innerHTML = '';
+
+    if (projects.length === 0) {
+        console.log("No projects available");
+        projectsTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No projects available</td></tr>';
+        return;
+    }
+
+    projects.forEach(project => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><a href="../project/details.html?id=${project.id}">${project.name}</a></td>
+            <td>${project.lead ? project.lead.fullName : 'Unassigned'}</td>
+            <td>${getProjectStatusBadge(project.type)}</td>
+            <td>${window.appHelpers?.formatDate(project.createdAt) || new Date(project.createdAt).toLocaleDateString()}</td>
+            <td>
+                <div class="progress">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: ${getProjectProgress(project)}%" 
+                        aria-valuenow="${getProjectProgress(project)}" aria-valuemin="0" aria-valuemax="100">
+                        ${getProjectProgress(project)}%
+                    </div>
+                </div>
+            </td>
+            <td>
+                <a href="../project/details.html?id=${project.id}" class="btn btn-info btn-sm">
+                    <i class="fas fa-eye"></i>
+                </a>
+            </td>
+        `;
+
+        projectsTableBody.appendChild(row);
+    });
+
+    console.log("Projects table updated successfully");
 }
 
 // Load assigned issues
 async function loadAssignedIssues() {
     console.log("Loading assigned issues");
 
-    try {
-        // Fallback issues data for testing if API fails
-        const fallbackIssues = [
-            {
-                id: 1,
-                issueKey: "SAMPLE-1",
-                title: "Sample Issue",
-                project: { id: 1, name: "Sample Project" },
-                status: "TODO",
-                priority: "MEDIUM"
-            }
-        ];
-
-        const issues = await fetchWithFallback('/issues/assigned', fallbackIssues);
-        console.log("Assigned issues loaded:", issues);
-
-        const issuesTableBody = document.getElementById('issuesTableBody');
-        if (!issuesTableBody) {
-            console.warn("Issues table body element not found");
-            return;
+    // Fallback issues data for testing if API fails
+    const fallbackIssues = [
+        {
+            id: 1,
+            issueKey: "SAMPLE-1",
+            title: "Sample Issue",
+            project: { id: 1, name: "Sample Project" },
+            status: "TODO",
+            priority: "MEDIUM"
         }
+    ];
 
-        issuesTableBody.innerHTML = '';
+    const response = await fetchWithFallback('/issues/assigned', { issues: fallbackIssues });
+    const issues = response.issues || fallbackIssues;
 
-        if (issues.length === 0) {
-            console.log("No assigned issues available");
-            issuesTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No assigned issues</td></tr>';
-            return;
-        }
+    console.log("Assigned issues loaded:", issues);
 
-        issues.forEach(issue => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${issue.issueKey}</td>
-                <td><a href="../issues/details.html?id=${issue.id}">${issue.title}</a></td>
-                <td><a href="../project/details.html?id=${issue.project.id}">${issue.project.name}</a></td>
-                <td>${getIssueStatusBadge(issue.status)}</td>
-                <td>${getIssuePriorityBadge(issue.priority)}</td>
-                <td>
-                    <a href="../issues/details.html?id=${issue.id}" class="btn btn-info btn-sm">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                </td>
-            `;
-
-            issuesTableBody.appendChild(row);
-        });
-
-        console.log("Issues table updated successfully");
-    } catch (error) {
-        console.error('Error loading assigned issues:', error);
-        // Continue loading other parts
+    const issuesTableBody = document.getElementById('issuesTableBody');
+    if (!issuesTableBody) {
+        console.warn("Issues table body element not found");
+        return;
     }
+
+    issuesTableBody.innerHTML = '';
+
+    if (issues.length === 0) {
+        console.log("No assigned issues available");
+        issuesTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No assigned issues</td></tr>';
+        return;
+    }
+
+    issues.forEach(issue => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${issue.issueKey}</td>
+            <td><a href="../issues/details.html?id=${issue.id}">${issue.title}</a></td>
+            <td><a href="../project/details.html?id=${issue.project.id}">${issue.project.name}</a></td>
+            <td>${getIssueStatusBadge(issue.status)}</td>
+            <td>${getIssuePriorityBadge(issue.priority)}</td>
+            <td>
+                <a href="../issues/details.html?id=${issue.id}" class="btn btn-info btn-sm">
+                    <i class="fas fa-eye"></i>
+                </a>
+            </td>
+        `;
+
+        issuesTableBody.appendChild(row);
+    });
+
+    console.log("Issues table updated successfully");
 }
 
 // Setup dashboard events
