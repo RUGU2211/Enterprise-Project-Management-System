@@ -1,4 +1,4 @@
-// issues.js - Issues management functionality
+// issues.js - Issues management functionality (enhanced version)
 
 document.addEventListener('DOMContentLoaded', function() {
     // Check if we need authentication
@@ -29,16 +29,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Load all issues
-async function loadIssues() {
+// Load all issues with optional filters
+async function loadIssues(filters) {
     try {
-        const issues = await window.appHelpers.apiRequest('/issues');
+        // Build query string for filters
+        let queryString = '';
+        if (filters) {
+            const params = [];
+            if (filters.projectId) params.push(`projectId=${filters.projectId}`);
+            if (filters.status) params.push(`status=${filters.status}`);
+            if (filters.priority) params.push(`priority=${filters.priority}`);
+            if (filters.assigneeId) params.push(`assigneeId=${filters.assigneeId}`);
+            if (filters.search) params.push(`search=${encodeURIComponent(filters.search)}`);
+            if (params.length > 0) {
+                queryString = `?${params.join('&')}`;
+            }
+        }
+
+        const issues = await window.appHelpers.apiRequest(`/issues${queryString}`);
         if (!issues) return;
 
         const issuesTableBody = document.getElementById('issuesTableBody');
         if (!issuesTableBody) return;
 
         issuesTableBody.innerHTML = '';
+
+        if (issues.length === 0) {
+            issuesTableBody.innerHTML = '<tr><td colspan="8" class="text-center">No issues found</td></tr>';
+            return;
+        }
 
         issues.forEach(issue => {
             const row = document.createElement('tr');
@@ -75,10 +94,64 @@ async function loadIssues() {
                 }
             });
         });
+
+        // Update pagination if applicable
+        updatePagination(issues.totalPages, issues.currentPage);
+
     } catch (error) {
         console.error('Error loading issues:', error);
         window.appHelpers.showAlert('Failed to load issues. Please try again later.', 'danger');
     }
+}
+
+// Update pagination controls
+function updatePagination(totalPages, currentPage) {
+    const paginationElement = document.querySelector('.pagination');
+    if (!paginationElement || !totalPages) return;
+
+    // Default to page 1 if not specified
+    currentPage = currentPage || 1;
+
+    let paginationHTML = '';
+
+    // Previous button
+    paginationHTML += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage - 1}" aria-disabled="${currentPage === 1}">Previous</a>
+        </li>
+    `;
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        paginationHTML += `
+            <li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>
+        `;
+    }
+
+    // Next button
+    paginationHTML += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage + 1}" aria-disabled="${currentPage === totalPages}">Next</a>
+        </li>
+    `;
+
+    paginationElement.innerHTML = paginationHTML;
+
+    // Add click event listeners
+    document.querySelectorAll('.pagination .page-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (this.getAttribute('aria-disabled') === 'true') return;
+
+            const page = parseInt(this.getAttribute('data-page'));
+            const currentFilters = getActiveFilters();
+            currentFilters.page = page;
+
+            loadIssues(currentFilters);
+        });
+    });
 }
 
 // Load issue details
@@ -96,7 +169,7 @@ async function loadIssueDetails() {
         if (!issue) return;
 
         // Set page title
-        document.title = `${issue.title} - Project Management System`;
+        document.title = `${issue.issueKey}: ${issue.title} - Project Management System`;
 
         // Populate issue details
         document.getElementById('issueTitle').textContent = issue.title;
@@ -109,11 +182,140 @@ async function loadIssueDetails() {
         document.getElementById('issueCreatedBy').textContent = issue.reporter ? issue.reporter.fullName : 'System';
         document.getElementById('issueDescription').textContent = issue.description || 'No description provided.';
 
+        // If the issue has a sprint, display it
+        const sprintElement = document.getElementById('issueSprint');
+        if (sprintElement) {
+            if (issue.sprint) {
+                sprintElement.innerHTML = `<a href="../sprint/details.html?id=${issue.sprint.id}">${issue.sprint.name}</a>`;
+            } else {
+                sprintElement.textContent = 'Not assigned to any sprint';
+            }
+        }
+
+        // If the issue has story points, display them
+        const storyPointsElement = document.getElementById('issueStoryPoints');
+        if (storyPointsElement) {
+            storyPointsElement.textContent = issue.storyPoints || 'Not estimated';
+        }
+
         // Load comments
         loadIssueComments(issue);
+
+        // Load attachments if they exist
+        if (issue.attachments && issue.attachments.length > 0) {
+            loadAttachments(issue.attachments);
+        }
+
+        // Update status button visibility based on current status
+        updateStatusButtons(issue.status);
     } catch (error) {
         console.error('Error loading issue details:', error);
         window.appHelpers.showAlert('Failed to load issue details. Please try again later.', 'danger');
+    }
+}
+
+// Update status buttons visibility based on current status
+function updateStatusButtons(currentStatus) {
+    const statusButtons = document.querySelectorAll('.changeStatus');
+    if (!statusButtons.length) return;
+
+    statusButtons.forEach(button => {
+        const status = button.getAttribute('data-status');
+
+        // Hide the button that corresponds to current status
+        if (status === currentStatus) {
+            button.style.display = 'none';
+        } else {
+            button.style.display = 'block';
+        }
+    });
+}
+
+// Load attachments
+function loadAttachments(attachments) {
+    const attachmentsContainer = document.getElementById('attachmentsContainer');
+    if (!attachmentsContainer) return;
+
+    if (attachments.length === 0) {
+        attachmentsContainer.innerHTML = '<p class="text-muted">No attachments</p>';
+        return;
+    }
+
+    attachmentsContainer.innerHTML = '';
+
+    attachments.forEach(attachment => {
+        const attachmentCard = document.createElement('div');
+        attachmentCard.className = 'card mb-2';
+
+        // Determine icon based on file type
+        let fileIcon = 'fa-file';
+        if (attachment.fileType) {
+            if (attachment.fileType.includes('image')) fileIcon = 'fa-file-image';
+            else if (attachment.fileType.includes('pdf')) fileIcon = 'fa-file-pdf';
+            else if (attachment.fileType.includes('word')) fileIcon = 'fa-file-word';
+            else if (attachment.fileType.includes('excel')) fileIcon = 'fa-file-excel';
+            else if (attachment.fileType.includes('text')) fileIcon = 'fa-file-text';
+            else if (attachment.fileType.includes('zip')) fileIcon = 'fa-file-archive';
+        }
+
+        attachmentCard.innerHTML = `
+            <div class="card-body p-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas ${fileIcon} me-2"></i>
+                        <a href="/epm/api/attachments/${attachment.id}/download" target="_blank">
+                            ${attachment.fileName}
+                        </a>
+                    </div>
+                    <div>
+                        <small class="text-muted me-2">
+                            Uploaded ${window.appHelpers.formatDate(attachment.uploadedAt)}
+                        </small>
+                        <button class="btn btn-sm btn-outline-danger deleteAttachment" data-id="${attachment.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        attachmentsContainer.appendChild(attachmentCard);
+    });
+
+    // Add event listeners to delete buttons
+    document.querySelectorAll('.deleteAttachment').forEach(button => {
+        button.addEventListener('click', function() {
+            const attachmentId = this.getAttribute('data-id');
+            if (confirm('Are you sure you want to delete this attachment?')) {
+                deleteAttachment(attachmentId);
+            }
+        });
+    });
+}
+
+// Delete attachment
+async function deleteAttachment(attachmentId) {
+    try {
+        const response = await window.appHelpers.apiRequest(`/attachments/${attachmentId}`, {
+            method: 'DELETE'
+        });
+
+        if (response || response === null) {
+            // Remove from UI
+            const attachmentElement = document.querySelector(`.deleteAttachment[data-id="${attachmentId}"]`).closest('.card');
+            attachmentElement.remove();
+
+            window.appHelpers.showAlert('Attachment deleted successfully', 'success');
+
+            // Check if there are no more attachments
+            const attachmentsContainer = document.getElementById('attachmentsContainer');
+            if (attachmentsContainer && attachmentsContainer.children.length === 0) {
+                attachmentsContainer.innerHTML = '<p class="text-muted">No attachments</p>';
+            }
+        }
+    } catch (error) {
+        console.error('Error deleting attachment:', error);
+        window.appHelpers.showAlert('Failed to delete attachment. Please try again later.', 'danger');
     }
 }
 
@@ -198,7 +400,7 @@ async function loadIssueForEdit() {
         if (!issue) return;
 
         // Set page title
-        document.title = `Edit Issue - Project Management System`;
+        document.title = `Edit ${issue.issueKey}: ${issue.title} - Project Management System`;
 
         // Populate form fields
         document.getElementById('issueTitle').value = issue.title;
@@ -219,6 +421,46 @@ async function loadIssueForEdit() {
 
         if (issue.dueDate) {
             document.getElementById('issueDueDate').value = issue.dueDate.split('T')[0];
+        }
+
+        // Load existing attachments
+        if (issue.attachments && issue.attachments.length > 0) {
+            const attachmentsContainer = document.getElementById('existingAttachments');
+            if (attachmentsContainer) {
+                attachmentsContainer.innerHTML = '';
+
+                issue.attachments.forEach(attachment => {
+                    const attachmentRow = document.createElement('div');
+                    attachmentRow.className = 'card mb-2';
+                    attachmentRow.innerHTML = `
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-file me-2"></i>
+                                    ${attachment.fileName}
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger removeAttachment" data-id="${attachment.id}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    attachmentsContainer.appendChild(attachmentRow);
+                });
+
+                // Add event listeners
+                document.querySelectorAll('.removeAttachment').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const attachmentId = this.getAttribute('data-id');
+                        if (confirm('Are you sure you want to remove this attachment?')) {
+                            this.closest('.card').remove();
+                            window.removedAttachments = window.removedAttachments || [];
+                            window.removedAttachments.push(attachmentId);
+                        }
+                    });
+                });
+            }
         }
     } catch (error) {
         console.error('Error loading issue for edit:', error);
@@ -276,10 +518,61 @@ async function setupIssueForm() {
                 }
             });
         }
+
+        // Initialize attachment upload preview
+        initializeAttachmentPreview();
     } catch (error) {
         console.error('Error setting up issue form:', error);
         window.appHelpers.showAlert('Failed to load form data. Please try again later.', 'danger');
     }
+}
+
+// Initialize attachment upload preview
+function initializeAttachmentPreview() {
+    const fileInput = document.getElementById('issueAttachments');
+    const previewContainer = document.getElementById('attachmentPreview');
+
+    if (!fileInput || !previewContainer) return;
+
+    fileInput.addEventListener('change', function() {
+        previewContainer.innerHTML = '';
+
+        if (this.files.length === 0) {
+            previewContainer.style.display = 'none';
+            return;
+        }
+
+        previewContainer.style.display = 'block';
+
+        Array.from(this.files).forEach(file => {
+            const filePreview = document.createElement('div');
+            filePreview.className = 'card mb-2';
+            filePreview.innerHTML = `
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file me-2"></i>
+                            ${file.name}
+                        </div>
+                        <small class="text-muted">${formatFileSize(file.size)}</small>
+                    </div>
+                </div>
+            `;
+
+            previewContainer.appendChild(filePreview);
+        });
+    });
+}
+
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 // Load project members
@@ -381,6 +674,9 @@ function setupIssueStatusDropdown() {
     // If editing, set selected
     if (window.issueStatusId) {
         statusSelect.value = window.issueStatusId;
+    } else {
+        // Default to TODO for new issues
+        statusSelect.value = 'TODO';
     }
 }
 
@@ -401,6 +697,9 @@ function setupIssuePriorityDropdown() {
     // If editing, set selected
     if (window.issuePriorityId) {
         prioritySelect.value = window.issuePriorityId;
+    } else {
+        // Default to MEDIUM for new issues
+        prioritySelect.value = 'MEDIUM';
     }
 }
 
@@ -420,6 +719,7 @@ async function submitIssueForm(e) {
     const issueStoryPoints = document.getElementById('issueStoryPoints')?.value;
     const issueDueDate = document.getElementById('issueDueDate')?.value;
     const issueDescription = document.getElementById('issueDescription').value;
+    const issueAttachments = document.getElementById('issueAttachments')?.files;
 
     // Validate form
     if (!issueTitle || !issueProject || !issueType || !issueStatus || !issuePriority) {
@@ -427,42 +727,89 @@ async function submitIssueForm(e) {
         return;
     }
 
-    // Create issue data
-    const issueData = {
-        title: issueTitle,
-        project: { id: issueProject },
-        type: issueType,
-        status: issueStatus,
-        priority: issuePriority,
-        description: issueDescription
-    };
+    // Create form data if we have attachments
+    let formData = null;
+    let hasAttachments = issueAttachments && issueAttachments.length > 0;
 
-    // Add optional fields if present
-    if (issueAssignee) {
-        issueData.assignee = { id: issueAssignee };
-    }
+    if (hasAttachments) {
+        formData = new FormData();
+        formData.append('title', issueTitle);
+        formData.append('projectId', issueProject);
+        formData.append('type', issueType);
+        formData.append('status', issueStatus);
+        formData.append('priority', issuePriority);
+        formData.append('description', issueDescription);
 
-    if (issueSprint) {
-        issueData.sprint = { id: issueSprint };
-    }
+        if (issueAssignee) formData.append('assigneeId', issueAssignee);
+        if (issueSprint) formData.append('sprintId', issueSprint);
+        if (issueStoryPoints) formData.append('storyPoints', issueStoryPoints);
+        if (issueDueDate) formData.append('dueDate', issueDueDate + 'T00:00:00');
 
-    if (issueStoryPoints) {
-        issueData.storyPoints = parseInt(issueStoryPoints);
-    }
+        // Add removed attachments if any
+        if (window.removedAttachments && window.removedAttachments.length > 0) {
+            window.removedAttachments.forEach(attachId => {
+                formData.append('removeAttachments', attachId);
+            });
+        }
 
-    if (issueDueDate) {
-        issueData.dueDate = issueDueDate + 'T00:00:00';
+        // Add files
+        for (let i = 0; i < issueAttachments.length; i++) {
+            formData.append('attachments', issueAttachments[i]);
+        }
+    } else {
+        // Create issue data as JSON
+        const issueData = {
+            title: issueTitle,
+            project: { id: issueProject },
+            type: issueType,
+            status: issueStatus,
+            priority: issuePriority,
+            description: issueDescription
+        };
+
+        // Add optional fields if present
+        if (issueAssignee) {
+            issueData.assignee = { id: issueAssignee };
+        }
+
+        if (issueSprint) {
+            issueData.sprint = { id: issueSprint };
+        }
+
+        if (issueStoryPoints) {
+            issueData.storyPoints = parseInt(issueStoryPoints);
+        }
+
+        if (issueDueDate) {
+            issueData.dueDate = issueDueDate + 'T00:00:00';
+        }
+
+        // Add removed attachments if any
+        if (window.removedAttachments && window.removedAttachments.length > 0) {
+            issueData.removeAttachments = window.removedAttachments;
+        }
     }
 
     try {
         let response;
+        let options = {
+            method: issueId ? 'PUT' : 'POST'
+        };
+
+        // Set appropriate content type and body based on whether we're using formData
+        if (hasAttachments) {
+            options.body = formData;
+            // Let browser set the correct content type with boundary
+        } else {
+            options.body = JSON.stringify(issueData);
+            options.headers = {
+                'Content-Type': 'application/json'
+            };
+        }
 
         if (issueId) {
             // Update existing issue
-            response = await window.appHelpers.apiRequest(`/issues/${issueId}`, {
-                method: 'PUT',
-                body: JSON.stringify(issueData)
-            });
+            response = await window.appHelpers.apiRequest(`/issues/${issueId}`, options);
 
             if (response) {
                 window.appHelpers.showAlert('Issue updated successfully', 'success');
@@ -472,10 +819,7 @@ async function submitIssueForm(e) {
             }
         } else {
             // Create new issue
-            response = await window.appHelpers.apiRequest('/issues', {
-                method: 'POST',
-                body: JSON.stringify(issueData)
-            });
+            response = await window.appHelpers.apiRequest('/issues', options);
 
             if (response) {
                 window.appHelpers.showAlert('Issue created successfully', 'success');
@@ -517,6 +861,65 @@ function setupIssueDetailsEvents() {
             updateIssueStatus(issueId, status);
         });
     });
+
+    // Add attachment button
+    const addAttachmentBtn = document.getElementById('addAttachmentBtn');
+    if (addAttachmentBtn) {
+        addAttachmentBtn.addEventListener('click', function() {
+            document.getElementById('attachmentUpload').click();
+        });
+
+        // Handle file selection and upload
+        const attachmentUpload = document.getElementById('attachmentUpload');
+        if (attachmentUpload) {
+            attachmentUpload.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    uploadAttachment();
+                }
+            });
+        }
+    }
+}
+
+// Upload attachment to issue
+async function uploadAttachment() {
+    const issueId = new URLSearchParams(window.location.search).get('id');
+    const fileInput = document.getElementById('attachmentUpload');
+
+    if (!fileInput || !fileInput.files.length) return;
+
+    const formData = new FormData();
+
+    // Add all selected files
+    for (let i = 0; i < fileInput.files.length; i++) {
+        formData.append('attachments', fileInput.files[i]);
+    }
+
+    try {
+        // Show loading indicator
+        window.appHelpers.showAlert('Uploading attachment...', 'info');
+
+        const response = await window.appHelpers.apiRequest(`/issues/${issueId}/attachments`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response) {
+            window.appHelpers.showAlert('Attachment uploaded successfully', 'success');
+
+            // Reload issue details to show the new attachment
+            const issue = await window.appHelpers.apiRequest(`/issues/${issueId}`);
+            if (issue && issue.attachments) {
+                loadAttachments(issue.attachments);
+            }
+
+            // Clear the file input
+            fileInput.value = '';
+        }
+    } catch (error) {
+        console.error('Error uploading attachment:', error);
+        window.appHelpers.showAlert('Failed to upload attachment. Please try again later.', 'danger');
+    }
 }
 
 // Add comment
@@ -625,11 +1028,25 @@ async function updateIssueStatus(issueId, status) {
         if (response) {
             // Update status badge
             document.getElementById('issueStatus').innerHTML = getStatusBadge(status);
-            window.appHelpers.showAlert(`Issue status updated to ${status}`, 'success');
+            window.appHelpers.showAlert(`Issue status updated to ${getStatusDisplayName(status)}`, 'success');
+
+            // Update visible status buttons
+            updateStatusButtons(status);
         }
     } catch (error) {
         console.error('Error updating issue status:', error);
         window.appHelpers.showAlert('Failed to update issue status. Please try again later.', 'danger');
+    }
+}
+
+// Get status display name
+function getStatusDisplayName(status) {
+    switch(status) {
+        case 'TODO': return 'To Do';
+        case 'IN_PROGRESS': return 'In Progress';
+        case 'IN_REVIEW': return 'In Review';
+        case 'DONE': return 'Done';
+        default: return status;
     }
 }
 
@@ -660,12 +1077,19 @@ async function deleteIssue(issueId) {
 
 // Setup issues list filters
 function setupIssuesListFilters() {
+    // First, load filter options (projects, assignees)
+    loadFilterOptions();
+
     const filterForm = document.getElementById('filterForm');
     if (filterForm) {
         filterForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            // TODO: Implement filtering
-            window.appHelpers.showAlert('Filtering functionality will be implemented soon.', 'info');
+
+            // Get filter values
+            const filters = getActiveFilters();
+
+            // Apply filters
+            loadIssues(filters);
         });
     }
 
@@ -677,6 +1101,107 @@ function setupIssuesListFilters() {
             loadIssues();
         });
     }
+
+    // Setup search functionality
+    const searchInput = document.getElementById('searchIssues');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                const filters = getActiveFilters();
+                filters.search = this.value;
+                loadIssues(filters);
+            }
+        });
+
+        // Add search button handler
+        const searchBtn = searchInput.parentElement.querySelector('button');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', function() {
+                const filters = getActiveFilters();
+                filters.search = searchInput.value;
+                loadIssues(filters);
+            });
+        }
+    }
+}
+
+// Load filter options
+async function loadFilterOptions() {
+    try {
+        // Load projects for filter
+        const projects = await window.appHelpers.apiRequest('/projects');
+        if (projects) {
+            const projectFilter = document.getElementById('projectFilter');
+            if (projectFilter) {
+                projectFilter.innerHTML = '<option value="">All Projects</option>';
+
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    projectFilter.appendChild(option);
+                });
+            }
+        }
+
+        // Load users for assignee filter
+        const users = await window.appHelpers.apiRequest('/users');
+        if (users) {
+            const assigneeFilter = document.getElementById('assigneeFilter');
+            if (assigneeFilter) {
+                // Keep special options
+                const defaultOptions = assigneeFilter.innerHTML;
+                assigneeFilter.innerHTML = defaultOptions;
+
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.fullName || user.username;
+                    assigneeFilter.appendChild(option);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading filter options:', error);
+    }
+}
+
+// Get active filters from the form
+function getActiveFilters() {
+    const filters = {};
+
+    const projectFilter = document.getElementById('projectFilter');
+    if (projectFilter && projectFilter.value) {
+        filters.projectId = projectFilter.value;
+    }
+
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter && statusFilter.value) {
+        filters.status = statusFilter.value;
+    }
+
+    const priorityFilter = document.getElementById('priorityFilter');
+    if (priorityFilter && priorityFilter.value) {
+        filters.priority = priorityFilter.value;
+    }
+
+    const assigneeFilter = document.getElementById('assigneeFilter');
+    if (assigneeFilter && assigneeFilter.value) {
+        if (assigneeFilter.value === 'me') {
+            filters.assignedToMe = true;
+        } else if (assigneeFilter.value === 'unassigned') {
+            filters.unassigned = true;
+        } else {
+            filters.assigneeId = assigneeFilter.value;
+        }
+    }
+
+    const searchInput = document.getElementById('searchIssues');
+    if (searchInput && searchInput.value.trim()) {
+        filters.search = searchInput.value.trim();
+    }
+
+    return filters;
 }
 
 // Helper functions

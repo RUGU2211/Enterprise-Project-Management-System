@@ -17,11 +17,11 @@
     <!-- Ensure the document is ready before loading components -->
     <script>
         // Deferred loading to ensure DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Load app.js first
             const appScript = document.createElement('script');
             appScript.src = '/epm/assets/js/app.js';
-            appScript.onload = function() {
+            appScript.onload = function () {
                 // After app.js is loaded, attempt to load components
                 if (window.ComponentLoader) {
                     ComponentLoader.loadAllComponents();
@@ -77,6 +77,19 @@
     </div>
 </div>
 
+<div class="mb-3">
+    <label class="form-label">User Roles</label>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="ADMIN" id="roleAdmin">
+        <label class="form-check-label" for="roleAdmin">Administrator</label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="PROJECT_MANAGER" id="roleProjectManager">
+        <label class="form-check-label" for="roleProjectManager">Project Manager</label>
+    </div>
+    <!-- Other roles -->
+</div>
+
 <!-- Include Footer -->
 <div id="footer-placeholder"></div>
 
@@ -86,9 +99,9 @@
 <!-- Custom JS -->
 <script>
     // Internal implementation of user management
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Check if app.js has been loaded
-        setTimeout(function() {
+        setTimeout(function () {
             initializeUserManagement();
         }, 300); // Small delay to ensure app.js has loaded
     });
@@ -100,7 +113,7 @@
         // Setup add user button
         const addUserBtn = document.getElementById('addUserBtn');
         if (addUserBtn) {
-            addUserBtn.addEventListener('click', function() {
+            addUserBtn.addEventListener('click', function () {
                 showAlert('Add user functionality will be implemented soon.', 'info');
             });
         }
@@ -114,9 +127,21 @@
         try {
             // Show sample users for now
             const users = [
-                { id: 1, username: 'admin', email: 'admin@example.com', fullName: 'System Administrator', roles: 'ADMIN' },
-                { id: 2, username: 'manager', email: 'manager@example.com', fullName: 'Project Manager', roles: 'PROJECT_MANAGER' },
-                { id: 3, username: 'dev', email: 'dev@example.com', fullName: 'Developer', roles: 'DEVELOPER' }
+                {
+                    id: 1,
+                    username: 'admin',
+                    email: 'admin@example.com',
+                    fullName: 'System Administrator',
+                    roles: 'ADMIN'
+                },
+                {
+                    id: 2,
+                    username: 'manager',
+                    email: 'manager@example.com',
+                    fullName: 'Project Manager',
+                    roles: 'PROJECT_MANAGER'
+                },
+                {id: 3, username: 'dev', email: 'dev@example.com', fullName: 'Developer', roles: 'DEVELOPER'}
             ];
 
             populateUserTable(users);

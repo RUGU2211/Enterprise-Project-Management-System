@@ -42,6 +42,10 @@ public class SprintService {
 
     @Transactional
     public Sprint createSprint(Sprint sprint) {
+        Project project = sprint.getProject();
+        if (project == null || project.getType() != Project.ProjectType.SCRUM) {
+            throw new IllegalArgumentException("Sprints can only be created for SCRUM projects");
+        }
         return sprintRepository.save(sprint);
     }
 
