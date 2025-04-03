@@ -21,52 +21,82 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            PasswordEncoder passwordEncoder
+    ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List getAllUsers() {
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public Optional getUserById(Long id) {
+    public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
 
-    public Optional getUserByUsername(String username) {
+    public Optional<User> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
-    public Optional getUserByEmail(String email) {
+    public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
     @Transactional
     public User createUser(User user) {
+        // Check if username already exists
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new RuntimeException("Username already exists");
+        }
+
+        // Check if email already exists
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
         // Encode password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        // Assign role
-        String roleName = "";
-        Role role = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+        // Assign default role if no roles are set
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            Role userRole = roleRepository.findByName(String.valueOf(Role.RoleType.ROLE_USER))
+                    .orElseThrow(() -> new RuntimeException("Default USER role not found"));
 
-        Set roles = new HashSet<>();
-        roles.add(role);
-        user.setRoles(roles);
+            Set<Role> roles = new HashSet<>();
+            roles.add(userRole);
+            user.setRoles(roles);
+        }
 
         return userRepository.save(user);
     }
 
     @Transactional
-    public User updateUser(Long id, User user) {
-        return userRepository.save(user);
+    public User updateUser(Long id, User userDetails) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Update user details while preserving sensitive information
+        existingUser.setFullName(userDetails.getFullName());
+        existingUser.setEmail(userDetails.getEmail());
+
+        // Only update password if a new one is provided
+        if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+        }
+
+        return userRepository.save(existingUser);
     }
 
     @Transactional
     public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found");
+        }
         userRepository.deleteById(id);
     }
 
@@ -79,8 +109,8 @@ public class UserService {
     }
 
     @Transactional
-    public void addRoleToUser(User user, String roleName) {
-        Role role = roleRepository.findByName(roleName)
+    public void addRoleToUser(User user, Role.RoleType roleName) {
+        Role role = roleRepository.findByName(String.valueOf(roleName))
                 .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
 
         user.getRoles().add(role);
@@ -88,8 +118,8 @@ public class UserService {
     }
 
     @Transactional
-    public void removeRoleFromUser(User user, String roleName) {
-        Role role = roleRepository.findByName(roleName)
+    public void removeRoleFromUser(User user, Role.RoleType roleName) {
+        Role role = roleRepository.findByName(String.valueOf(roleName))
                 .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
 
         user.getRoles().remove(role);

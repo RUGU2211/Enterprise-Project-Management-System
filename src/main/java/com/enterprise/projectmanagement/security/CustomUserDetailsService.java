@@ -12,9 +12,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -35,15 +34,13 @@ public class CustomUserDetailsService implements UserDetailsService {
                 true,
                 true,
                 true,
-                getAuthorities(user.getRoles())
+                mapRolesToAuthorities(user.getRoles())
         );
     }
 
-    private Collection getAuthorities(Collection roles) {
-        List authorities = new ArrayList<>();
-        for (Object role : roles) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getClass()));
-        }
-        return authorities;
+    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles) {
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                .collect(Collectors.toList());
     }
 }

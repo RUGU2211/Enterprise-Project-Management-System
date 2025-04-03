@@ -4,6 +4,17 @@ CREATE DATABASE IF NOT EXISTS projectmanagement CHARACTER SET utf8mb4 COLLATE ut
 -- Use the database
 USE projectmanagement;
 
+-- Drop tables in correct order to avoid foreign key constraints
+DROP TABLE IF EXISTS attachments;
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS issues;
+DROP TABLE IF EXISTS project_members;
+DROP TABLE IF EXISTS sprints;
+DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS user_roles;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS users;
+
 -- -----------------------------------------------------
 -- Table `roles`
 -- -----------------------------------------------------
@@ -220,38 +231,82 @@ CREATE TABLE IF NOT EXISTS `attachments` (
 -- Initial Data - Roles
 -- -----------------------------------------------------
 INSERT INTO `roles` (`name`) VALUES
-                                 ('ADMIN'),
-                                 ('PROJECT_MANAGER'),
-                                 ('DEVELOPER'),
-                                 ('TESTER'),
-                                 ('USER');
+                                 ('ROLE_ADMIN'),
+                                 ('ROLE_MANAGER'),
+                                 ('ROLE_USER'),
+                                 ('ROLE_GUEST');
 
 -- -----------------------------------------------------
--- Create system admin user (username: admin, password: admin)
+-- Create system admin user
+-- Password is 'admin' (BCrypt encoded)
+-- Encoded using: BCryptPasswordEncoder().encode("admin")
 -- -----------------------------------------------------
-INSERT INTO `users` (`username`, `password`, `email`, `full_name`, `is_enabled`)
-VALUES ('admin', 'admin', 'admin@example.com', 'System Administrator', TRUE);
+INSERT INTO `users` (
+    `username`,
+    `password`,
+    `email`,
+    `full_name`,
+    `is_enabled`,
+    `avatar_url`
+) VALUES (
+             'admin',
+             '$2a$10$7z3gUsVDPxxFhWjsjUBCx.usfXqLmPAn5yR/GoeqKq0qjnUz0GTYG',
+             'admin@example.com',
+             'System Administrator',
+             TRUE,
+             NULL
+         );
 
+-- -----------------------------------------------------
 -- Assign ADMIN role to admin user
+-- -----------------------------------------------------
 INSERT INTO `user_roles` (`user_id`, `role_id`)
-VALUES (1, (SELECT id FROM roles WHERE name = 'ADMIN'));
+VALUES (1, (SELECT id FROM roles WHERE name = 'ROLE_ADMIN'));
 
 -- -----------------------------------------------------
--- Create a test project manager (username: manager, password: manager)
+-- Create a test project manager
+-- Password is 'manager' (BCrypt encoded)
 -- -----------------------------------------------------
-INSERT INTO `users` (`username`, `password`, `email`, `full_name`, `is_enabled`)
-VALUES ('manager', 'manager', 'manager@example.com', 'Project Manager', TRUE);
+INSERT INTO `users` (
+    `username`,
+    `password`,
+    `email`,
+    `full_name`,
+    `is_enabled`,
+    `avatar_url`
+) VALUES (
+             'manager',
+             '$2a$10$HyQHmGH5ILBcJOG4gmT3EONiB/f4.mSJUOTNVSW2U3/.cFPIQbbuW',
+             'manager@example.com',
+             'Project Manager',
+             TRUE,
+             NULL
+         );
 
 -- Assign PROJECT_MANAGER role to manager user
 INSERT INTO `user_roles` (`user_id`, `role_id`)
-VALUES (2, (SELECT id FROM roles WHERE name = 'PROJECT_MANAGER'));
+VALUES (2, (SELECT id FROM roles WHERE name = 'ROLE_MANAGER'));
 
 -- -----------------------------------------------------
--- Create a test developer (username: dev, password: dev)
+-- Create a test developer
+-- Password is 'dev' (BCrypt encoded)
 -- -----------------------------------------------------
-INSERT INTO `users` (`username`, `password`, `email`, `full_name`, `is_enabled`)
-VALUES ('dev', 'dev', 'dev@example.com', 'Developer', TRUE);
+INSERT INTO `users` (
+    `username`,
+    `password`,
+    `email`,
+    `full_name`,
+    `is_enabled`,
+    `avatar_url`
+) VALUES (
+             'dev',
+             '$2a$10$qBjOZcmowJSc9kCrBjMfyOXG6dF6fTrN4B0nfyKRiUNLcMa59iZn2',
+             'dev@example.com',
+             'Developer',
+             TRUE,
+             NULL
+         );
 
 -- Assign DEVELOPER role to dev user
 INSERT INTO `user_roles` (`user_id`, `role_id`)
-VALUES (3, (SELECT id FROM roles WHERE name = 'DEVELOPER'));
+VALUES (3, (SELECT id FROM roles WHERE name = 'ROLE_USER'));
