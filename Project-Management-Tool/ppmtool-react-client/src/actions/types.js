@@ -1,0 +1,25 @@
+export const GET_ERRORS = "GET_ERRORS";
+export const GET_PROJECTS = "GET_PROJECTS";
+export const GET_PROJECT = "GET_PROJECT";
+export const DELETE_PROJECT = "DELETE_PROJECT";
+
+//Types for BACKLOG ACTIONS
+export const GET_BACKLOG = "GET_BACKLOG";
+export const GET_PROJECT_TASK = "GET_PROJECT_TASK";
+export const DELETE_PROJECT_TASK = "DELETE_PROJECT_TASK";
+
+export const SET_CURRENT_USER = "SET_CURRENT_USER";
+export const SET_USER_PROFILE = "SET_USER_PROFILE";
+
+// Types for TEAM ACTIONS
+export const GET_TEAMS = "GET_TEAMS";
+export const GET_TEAM = "GET_TEAM";
+export const CREATE_TEAM = "CREATE_TEAM";
+export const UPDATE_TEAM = "UPDATE_TEAM";
+export const DELETE_TEAM = "DELETE_TEAM";
+
+// Types for TEAM MEMBER ACTIONS
+export const GET_TEAM_MEMBERS = "GET_TEAM_MEMBERS";
+export const ADD_TEAM_MEMBER = "ADD_TEAM_MEMBER";
+export const REMOVE_TEAM_MEMBER = "REMOVE_TEAM_MEMBER";
+export const CLEAR_TEAM_ERRORS = "CLEAR_TEAM_ERRORS";
