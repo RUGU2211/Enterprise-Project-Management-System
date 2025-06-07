@@ -15,6 +15,10 @@
   ![Coverage](https://img.shields.io/badge/coverage-85%25-yellow.svg)
   
   </div>
+  
+  <p align="center">
+    <img src="Project-Management-Tool/images/main-interface.png" alt="Main Interface Preview" width="700"/>
+  </p>
 </div>
 
 ---
@@ -29,18 +33,28 @@
         <br/><strong>📊 Dashboard Overview</strong>
       </td>
       <td align="center">
-        <img src="Project-Management-Tool/images/project-view.png" alt="Project View" width="400"/>
+        <img src="Project-Management-Tool/images/project-list.png" alt="Project List" width="400"/>
         <br/><strong>📋 Project Management</strong>
       </td>
     </tr>
     <tr>
       <td align="center">
-        <img src="Project-Management-Tool/images/task-management.png" alt="Task Management" width="400"/>
+        <img src="Project-Management-Tool/images/task-board.png" alt="Task Board" width="400"/>
         <br/><strong>✅ Task Management</strong>
       </td>
       <td align="center">
-        <img src="Project-Management-Tool/images/analytics.png" alt="Analytics" width="400"/>
+        <img src="Project-Management-Tool/images/reports.png" alt="Reports" width="400"/>
         <br/><strong>📈 Analytics & Reporting</strong>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="Project-Management-Tool/images/team-view.png" alt="Team Management" width="400"/>
+        <br/><strong>👥 Team Collaboration</strong>
+      </td>
+      <td align="center">
+        <img src="Project-Management-Tool/images/calendar.png" alt="Calendar View" width="400"/>
+        <br/><strong>📅 Calendar & Timeline</strong>
       </td>
     </tr>
   </table>
@@ -71,23 +85,34 @@
 
 <div align="center">
   
-| Frontend | Backend | Database | DevOps |
-|----------|---------|----------|--------|
-| ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) | ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white) | ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white) | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) |
-| ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white) | ![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge) | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) | ![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white) |
-| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white) | ![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white) | ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white) | ![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white) |
+| Frontend | Backend | Database | Tools |
+|----------|---------|----------|-------|
+| ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white) | ![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white) | ![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white) | ![VS Code](https://img.shields.io/badge/VS_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white) |
+| ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white) | ![Apache](https://img.shields.io/badge/Apache-D22128?style=for-the-badge&logo=apache&logoColor=white) | ![phpMyAdmin](https://img.shields.io/badge/phpMyAdmin-6C78AF?style=for-the-badge&logo=phpmyadmin&logoColor=white) | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) |
+| ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) | ![XAMPP](https://img.shields.io/badge/XAMPP-FB7A24?style=for-the-badge&logo=xampp&logoColor=white) |  | ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white) |
+| ![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white) |  |  |  |
 
 </div>
+
+### 🔧 Development Stack
+
+- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap for responsive design
+- **Backend**: PHP for server-side logic and business operations
+- **Database**: MySQL for data storage and management
+- **Server**: Apache HTTP Server (via XAMPP for local development)
+- **Development Environment**: XAMPP stack for local development
+- **Version Control**: Git with GitHub for source code management
+- **Code Editor**: Visual Studio Code or similar IDE
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 Before you begin, ensure you have the following installed:
-- **Node.js** (v18 or higher)
-- **npm** or **yarn**
-- **MongoDB** (v5.0 or higher)
-- **Git**
+- **XAMPP** (Apache, MySQL, PHP)
+- **Web Browser** (Chrome, Firefox, Safari, etc.)
+- **Git** for version control
+- **Text Editor** (VS Code, Sublime Text, etc.)
 
 ### Installation
 
@@ -97,50 +122,42 @@ Before you begin, ensure you have the following installed:
    cd Enterprise-Project-Management-System
    ```
 
-2. **Install dependencies**
+2. **Setup XAMPP**
+   - Download and install XAMPP from [https://www.apachefriends.org/](https://www.apachefriends.org/)
+   - Start Apache and MySQL services from XAMPP Control Panel
+
+3. **Database Setup**
    ```bash
-   # Install backend dependencies
-   cd backend
-   npm install
+   # Open phpMyAdmin in browser
+   http://localhost/phpmyadmin
    
-   # Install frontend dependencies
-   cd ../frontend
-   npm install
+   # Create new database
+   CREATE DATABASE enterprise_pm;
+   
+   # Import database schema
+   # Import the provided SQL file from /database folder
    ```
 
-3. **Environment Setup**
-   ```bash
-   # Copy environment files
-   cp .env.example .env
-   
-   # Edit the environment variables
-   nano .env
+4. **Configure the application**
+   ```php
+   // Update database connection in config.php
+   $servername = "localhost";
+   $username = "root";
+   $password = "";
+   $dbname = "enterprise_pm";
    ```
 
-4. **Database Setup**
+5. **Move project to htdocs**
    ```bash
-   # Start MongoDB service
-   sudo systemctl start mongod
-   
-   # Run database migrations
-   npm run migrate
-   ```
-
-5. **Start the application**
-   ```bash
-   # Start backend server
-   cd backend
-   npm run dev
-   
-   # Start frontend (in new terminal)
-   cd frontend
-   npm start
+   # Copy project folder to XAMPP htdocs directory
+   # Usually located at: C:\xampp\htdocs\ (Windows) or /opt/lampp/htdocs/ (Linux)
    ```
 
 6. **Access the application**
-   - Frontend: `http://localhost:3000`
-   - Backend API: `http://localhost:5000`
-   - API Documentation: `http://localhost:5000/api-docs`
+   - Open browser and navigate to: `http://localhost/Enterprise-Project-Management-System`
+   - Default admin credentials (if applicable):
+     - Username: `admin`
+     - Password: `admin123`
 
 ## 📖 Documentation
 
@@ -156,41 +173,50 @@ Before you begin, ensure you have the following installed:
 
 ## 🏗️ Architecture
 
+### Architecture Diagram
+
 <div align="center">
-  <img src="Project-Management-Tool/images/architecture-diagram.png" alt="System Architecture" width="800"/>
+  <img src="Project-Management-Tool/images/architecture.png" alt="System Architecture" width="800"/>
+  <p><em>Enterprise Project Management System Architecture</em></p>
 </div>
 
-The system follows a microservices architecture with:
-- **Frontend**: React-based SPA with TypeScript
-- **API Gateway**: Express.js with GraphQL
-- **Services**: Modular backend services
-- **Database**: MongoDB with Redis caching
-- **Authentication**: JWT-based auth with refresh tokens
+The system follows a traditional LAMP architecture with:
+- **Frontend**: HTML5, CSS3, JavaScript with Bootstrap framework
+- **Backend**: PHP for server-side processing and business logic
+- **Database**: MySQL for reliable data storage and relationships
+- **Server**: Apache HTTP Server for web serving
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Configuration
 
-```bash
-# Database
-DATABASE_URL=mongodb://localhost:27017/enterprise_pm
-REDIS_URL=redis://localhost:6379
+### Database Configuration
 
-# Authentication
-JWT_SECRET=your-jwt-secret-key
-JWT_EXPIRES_IN=7d
-REFRESH_TOKEN_SECRET=your-refresh-token-secret
+```php
+<?php
+// config/database.php
+$host = 'localhost';
+$dbname = 'enterprise_pm';
+$username = 'root';
+$password = '';
 
-# Email Service
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+}
+?>
+```
 
-# File Storage
-AWS_ACCESS_KEY_ID=your-aws-access-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret-key
-AWS_S3_BUCKET=your-s3-bucket-name
+### Application Settings
+
+```php
+// config/app.php
+define('APP_NAME', 'Enterprise Project Management System');
+define('APP_URL', 'http://localhost/Enterprise-Project-Management-System/');
+define('UPLOAD_PATH', 'uploads/');
+define('MAX_FILE_SIZE', 5242880); // 5MB
 ```
 
 ## 🧪 Testing
@@ -240,7 +266,8 @@ npm run deploy:prod
 ## 📊 Performance
 
 <div align="center">
-  <img src="Project-Management-Tool/images/performance-metrics.png" alt="Performance Metrics" width="600"/>
+  <img src="Project-Management-Tool/images/performance.png" alt="Performance Metrics" width="600"/>
+  <p><em>Real-time Performance Dashboard</em></p>
 </div>
 
 - **Response Time**: < 200ms average
