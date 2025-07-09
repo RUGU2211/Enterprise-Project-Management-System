@@ -5,222 +5,188 @@ import { connect } from "react-redux";
 import { deleteTeam } from "../../actions/teamActions";
 
 class TeamItem extends Component {
-  onDeleteClick = id => {
-    this.props.deleteTeam(id);
+  constructor(props) {
+    super(props);
+    this.state = {
+      showDeleteConfirmation: false,
+      isHovered: false
+    };
+  }
+
+  onDeleteClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (this.props.onDeleteClick) {
+      this.props.onDeleteClick(this.props.team);
+    } else {
+      // Fallback to local delete confirmation
+      if (this.state.showDeleteConfirmation) {
+        this.props.deleteTeam(this.props.team.id, this.props.history);
+        this.setState({ showDeleteConfirmation: false });
+      } else {
+        this.setState({ showDeleteConfirmation: true });
+      }
+    }
+  };
+  
+  cancelDelete = () => {
+    this.setState({ showDeleteConfirmation: false });
+  };
+
+  setHovered = (isHovered) => {
+    this.setState({ isHovered });
+  }
+
+  formatDate = date => {
+    if (!date) return "Not set";
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
 
   render() {
     const { team } = this.props;
+    const { showDeleteConfirmation } = this.state;
+    const isActive = team.active !== false;
+    const topBorderStyle = isActive ? { borderTop: '4px solid #28a745' } : { borderTop: '4px solid #6c757d' };
+    
     return (
-      <div className="team-card card shadow-lg border-0 mb-4 position-relative overflow-hidden hover-card">
-        <div className="card-header p-4 d-flex align-items-center" 
-             style={{
-               background: `linear-gradient(135deg, ${team.teamColor || "#4e73df"} 0%, ${team.teamColor ? team.teamColor + "cc" : "#224abe"} 100%)`,
-               borderBottom: "3px solid rgba(255,255,255,0.2)"
-             }}>
-          <div className="team-icon bg-white rounded-circle d-flex align-items-center justify-content-center mr-3 shadow" 
-               style={{ width: "60px", height: "60px", minWidth: "60px" }}>
-            <i className={`fas fa-${team.teamIcon || "users"} fa-2x`} 
-               style={{ color: team.teamColor || "#4e73df" }}></i>
-          </div>
-          <div className="text-white flex-grow-1">
-            <h3 className="mb-1 font-weight-bold">{team.name}</h3>
-            <p className="mb-0">
-              <span className="badge badge-light shadow-sm mr-2">
-                <i className="far fa-calendar-alt mr-1"></i>
-                {new Date(team.createdAt).toLocaleDateString()}
-              </span>
-              <span className="badge badge-light shadow-sm">
-                <i className="fas fa-users mr-1"></i>
-                {team.memberCount || 1} members
-              </span>
-            </p>
-          </div>
-        </div>
-        
+      <div 
+        className="card mb-3 shadow-sm border-0 team-item"
+        style={Object.assign({}, topBorderStyle, { background: 'var(--color-card-bg)', color: 'var(--color-text)' })}
+        onMouseEnter={() => this.setHovered(true)}
+        onMouseLeave={() => this.setHovered(false)}
+      >
         <div className="card-body p-4">
-          <p className="team-description mb-4">
-            {team.description || "No description available for this team."}
-          </p>
-          
-          <div className="team-stats d-flex flex-wrap mb-4">
-            <div className="stat-item bg-primary-light mr-3 mb-2 px-3 py-2 rounded shadow">
+          {/* Header Section */}
+          <div className="d-flex justify-content-between align-items-start mb-3">
+            <div className="flex-grow-1">
+              <div className="d-flex align-items-center mb-2">
+                <h5 className="mb-0 font-weight-bold text-dark mr-3" style={{ color: 'var(--color-text)' }}>{team.teamName}</h5>
+                <span className="badge badge-light border text-primary mr-2" style={{ background: 'var(--color-card-alt)', color: 'var(--color-accent)' }}>
+                  <i className="fas fa-hashtag mr-1"></i>{team.teamIdentifier}
+                </span>
+                <span className={`badge ${isActive ? 'bg-success' : 'bg-secondary'} text-white`}>
+                  <i className="fas fa-circle mr-1 small"></i>{isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <p className="text-muted mb-0" style={{ color: 'var(--color-text-light)' }}>{team.description || "No description provided"}</p>
+            </div>
+          </div>
+
+          {/* Team Details */}
+          <div className="row mb-4">
+            <div className="col-md-4 mb-3 mb-md-0">
               <div className="d-flex align-items-center">
-                <i className="fas fa-user-tie mr-2 text-primary"></i>
+                <div className="bg-primary-soft rounded-circle p-2 mr-3">
+                  <i className="fas fa-user-tie text-primary"></i>
+                </div>
                 <div>
-                  <div className="stat-label small text-muted">Team Lead</div>
-                  <div className="stat-value font-weight-bold">{team.teamLeadName || "Not assigned"}</div>
+                  <div className="font-weight-bold text-dark small">TEAM LEADER</div>
+                  <div className="text-muted">{team.teamLeader || 'Not assigned'}</div>
                 </div>
               </div>
             </div>
-            <div className="stat-item bg-success-light mr-3 mb-2 px-3 py-2 rounded shadow">
+            
+            <div className="col-md-4 mb-3 mb-md-0">
               <div className="d-flex align-items-center">
-                <i className="fas fa-project-diagram mr-2 text-success"></i>
+                <div className="bg-info-soft rounded-circle p-2 mr-3">
+                  <i className="fas fa-users text-info"></i>
+                </div>
                 <div>
-                  <div className="stat-label small text-muted">Projects</div>
-                  <div className="stat-value font-weight-bold">{team.projectCount || 0}</div>
+                  <div className="font-weight-bold text-dark small">MEMBERS</div>
+                  <div className="text-muted">{team.memberCount || 0} members</div>
                 </div>
               </div>
             </div>
-            <div className="stat-item bg-info-light mb-2 px-3 py-2 rounded shadow">
+            
+            <div className="col-md-4">
               <div className="d-flex align-items-center">
-                <i className="fas fa-tasks mr-2 text-info"></i>
+                <div className="bg-success-soft rounded-circle p-2 mr-3">
+                  <i className="fas fa-calendar-alt text-success"></i>
+                </div>
                 <div>
-                  <div className="stat-label small text-muted">Tasks</div>
-                  <div className="stat-value font-weight-bold">{team.taskCount || 0}</div>
+                  <div className="font-weight-bold text-dark small">CREATED</div>
+                  <div className="text-muted">{this.formatDate(team.created_At)}</div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="card-footer bg-white border-0 p-4 d-flex justify-content-between">
-          <div>
-            <Link to={`/teamBoard/${team.id}`} className="btn btn-primary mr-2 shadow">
-              <i className="fas fa-clipboard-list mr-1"></i> Team Board
-            </Link>
-            <Link to={`/updateTeam/${team.id}`} className="btn btn-light mr-2 shadow">
-              <i className="fas fa-pencil-alt mr-1"></i> Edit
-            </Link>
+
+          {/* Action Buttons */}
+          <div className="row">
+            <div className="col-md-4 mb-2 mb-md-0">
+              <Link
+                to={`/teamBoard/${team.teamIdentifier}`}
+                className="btn btn-primary btn-block"
+              >
+                <i className="fas fa-clipboard-list mr-2"></i> View Board
+              </Link>
+            </div>
+            <div className="col-md-4 mb-2 mb-md-0">
+              <Link
+                to={`/updateTeam/${team.teamIdentifier}`}
+                className="btn btn-outline-secondary btn-block"
+              >
+                <i className="fas fa-edit mr-2"></i> Edit
+              </Link>
+            </div>
+            <div className="col-md-4">
+              <button
+                className="btn btn-outline-danger btn-block"
+                onClick={this.onDeleteClick}
+              >
+                <i className="fas fa-trash-alt mr-2"></i> Delete
+              </button>
+            </div>
           </div>
-          <button 
-            className="btn btn-danger shadow"
-            onClick={this.onDeleteClick.bind(this, team.id)}
-          >
-            <i className="fas fa-trash-alt mr-1"></i> Delete
-          </button>
+
+          {/* Delete Confirmation */}
+          {showDeleteConfirmation && (
+            <div className="alert alert-danger mt-3">
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <i className="fas fa-exclamation-triangle mr-2"></i>
+                  Are you sure you want to delete this team?
+                </div>
+                <div>
+                  <button 
+                    className="btn btn-sm btn-danger mr-2" 
+                    onClick={this.onDeleteClick}
+                  >
+                    Yes, Delete
+                  </button>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary" 
+                    onClick={this.cancelDelete}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-        
-        <div className="card-decorations">
-          <div className="card-decoration-1"></div>
-          <div className="card-decoration-2"></div>
-        </div>
-        
-        <style jsx>{`
-          .team-card {
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-          }
-          
-          .hover-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
-          }
-          
-          .team-icon {
-            transition: all 0.3s ease;
-            z-index: 1;
-          }
-          
-          .team-card:hover .team-icon {
-            transform: scale(1.1) rotate(10deg);
-          }
-          
-          .team-description {
-            font-size: 1rem;
-            color: #495057;
-            line-height: 1.6;
-          }
-          
-          .btn-primary {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            border: none;
-            transition: all 0.3s ease;
-          }
-          
-          .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(78, 115, 223, 0.4) !important;
-          }
-          
-          .btn-danger {
-            background: linear-gradient(135deg, #e74a3b 0%, #be2617 100%);
-            border: none;
-            transition: all 0.3s ease;
-          }
-          
-          .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(231, 74, 59, 0.4) !important;
-          }
-          
-          .btn-light {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border: none;
-            color: #5a5c69;
-            transition: all 0.3s ease;
-          }
-          
-          .btn-light:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
-            color: #2e59d9;
-          }
-          
-          .stat-item {
-            transition: all 0.3s ease;
-            min-width: 150px;
-          }
-          
-          .stat-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
-          }
-          
-          .bg-primary-light {
-            background-color: rgba(78, 115, 223, 0.1);
-          }
-          
-          .bg-success-light {
-            background-color: rgba(40, 167, 69, 0.1);
-          }
-          
-          .bg-info-light {
-            background-color: rgba(54, 185, 204, 0.1);
-          }
-          
-          .card-decorations {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            overflow: hidden;
-          }
-          
-          .card-decoration-1 {
-            position: absolute;
-            top: -20%;
-            right: -20%;
-            width: 60%;
-            height: 60%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-            border-radius: 50%;
-          }
-          
-          .card-decoration-2 {
-            position: absolute;
-            bottom: -20%;
-            left: -20%;
-            width: 60%;
-            height: 60%;
-            background: radial-gradient(circle, rgba(78,115,223,0.05) 0%, rgba(78,115,223,0) 70%);
-            border-radius: 50%;
-          }
-        `}</style>
       </div>
     );
   }
 }
 
 TeamItem.propTypes = {
+  team: PropTypes.object.isRequired,
   deleteTeam: PropTypes.func.isRequired,
-  team: PropTypes.object.isRequired
+  onDeleteClick: PropTypes.func
 };
 
+const mapStateToProps = state => ({
+  security: state.security
+});
+
 export default connect(
-  null,
+  mapStateToProps,
   { deleteTeam }
 )(TeamItem); 

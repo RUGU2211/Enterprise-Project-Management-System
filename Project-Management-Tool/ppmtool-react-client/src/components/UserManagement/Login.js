@@ -12,10 +12,11 @@ class Login extends Component {
       username: "",
       password: "",
       errors: {},
-      tokenExpired: false,
+      isLoading: false,
       showPassword: false,
-      isLoading: false
+      tokenExpired: false
     };
+    this.timeoutId = null;
     this.onChange = this.onChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
     this.togglePasswordVisibility = this.togglePasswordVisibility.bind(this);
@@ -25,37 +26,36 @@ class Login extends Component {
     if (this.props.security.validToken) {
       this.props.history.push("/dashboard");
     }
-    
     const urlParams = new URLSearchParams(window.location.search);
-    const expired = urlParams.get('expired');
-    if (expired === "true") {
+    if (urlParams.get('expired') === 'true') {
       this.setState({ tokenExpired: true });
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.security.validToken) {
+  componentDidUpdate(prevProps) {
+    if (this.props.errors !== prevProps.errors) {
+      this.setState({ errors: this.props.errors, loading: false });
+    }
+    if (this.props.security.validToken && !prevProps.security.validToken) {
       this.props.history.push("/dashboard");
     }
+  }
 
-    if (nextProps.errors) {
-      this.setState({ errors: nextProps.errors, isLoading: false });
+  componentWillUnmount() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
     }
   }
 
   onSubmit(e) {
     e.preventDefault();
     this.setState({ isLoading: true });
-    
     const LoginRequest = {
       username: this.state.username,
       password: this.state.password
     };
-
     this.props.login(LoginRequest);
-    
-    // If login doesn't fail immediately, we'll reset loading state in componentWillReceiveProps
-    setTimeout(() => {
+    this.timeoutId = setTimeout(() => {
       if (this.state.isLoading) {
         this.setState({ isLoading: false });
       }
@@ -74,595 +74,287 @@ class Login extends Component {
 
   render() {
     const { errors, tokenExpired, showPassword, isLoading } = this.state;
-    
     const hasErrors = errors && (errors.error || errors.username || errors.password);
-    
     return (
-      <div className="login">
-        <div className="login-bg">
-          <div className="login-animated-shape shape1"></div>
-          <div className="login-animated-shape shape2"></div>
-          <div className="login-animated-shape shape3"></div>
-          <div className="login-animated-shape shape4"></div>
+      <div className="login-outer d-flex align-items-center justify-content-center min-vh-100" style={{background: "var(--color-bg)"}}>
+        <div className="login-advanced-card row g-0 shadow-lg animate-fade-in">
+          {/* Illustration/Visual Section */}
+          <div className="col-md-6 d-none d-md-flex align-items-center justify-content-center login-visual-section">
+            <div className="login-visual-content text-center w-100">
+              <i className="fas fa-user-shield fa-4x mb-4" style={{color: "var(--color-secondary)"}}></i>
+              <h2 className="heading-college mb-3" style={{color: "var(--color-secondary)"}}>Welcome Back!</h2>
+              <p className="text-muted mb-4" style={{fontSize: '1.1rem'}}>Manage your projects, teams, and tasks with confidence.<br/>Secure, fast, and easy access.</p>
+              <img src="/login.jpg" alt="Login visual" style={{ width: '100%', borderRadius: '1.2rem', boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }} />
         </div>
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-md-8 col-lg-5">
-              <div className="login-card slide-up">
-                <div className="card-header text-center">
-                  <div className="brand-icon pulse">
-                    <i className="fas fa-clipboard-list"></i>
                   </div>
-                  <h2>Welcome Back</h2>
-                  <p>Sign in to access your dashboard</p>
+          {/* Form Section */}
+          <div className="col-12 col-md-6 d-flex align-items-center justify-content-center">
+            <div className="login-form-section w-100 p-4 p-md-5">
+              <div className="text-center mb-4">
+                <div className="brand-icon mb-3">
+                  <i className="fas fa-clipboard-list fa-2x" style={{color: "var(--color-primary)"}}></i>
                 </div>
-                <div className="card-body">
+                <h1 className="heading-college mb-2" style={{color: "var(--color-primary)"}}>Login</h1>
+                <p className="text-muted">Login to your account</p>
+              </div>
+              <button className="btn btn-outline-light w-100 mb-3 google-btn" type="button" tabIndex={-1}>
+                <i className="fab fa-google me-2"></i> Continue with Google
+              </button>
+              <div className="divider my-3"><span>or</span></div>
                   {tokenExpired && (
-                    <div className="alert-message warning slide-down">
-                      <div className="alert-icon">
-                        <i className="fas fa-exclamation-triangle"></i>
-                      </div>
-                      <div className="alert-content">
+                <div className="alert alert-warning animate-slide-down">
+                  <i className="fas fa-exclamation-triangle me-2"></i>
                         Your session has expired. Please login again.
-                      </div>
                     </div>
                   )}
-                  
                   {hasErrors && (
-                    <div className="alert-message danger slide-down">
-                      <div className="alert-icon">
-                        <i className="fas fa-exclamation-circle"></i>
-                      </div>
-                      <div className="alert-content">
-                        <strong>Login Failed</strong>
-                        <ul>
+                <div className="alert alert-danger animate-slide-down">
+                  <i className="fas fa-exclamation-circle me-2"></i>
+                  <strong>Login Failed:</strong>
+                  <ul className="mb-0">
                           {errors.error && <li>{errors.error}</li>}
                           {errors.username && <li>{errors.username}</li>}
                           {errors.password && <li>{errors.password}</li>}
                         </ul>
-                      </div>
                     </div>
                   )}
-                  
-                  <form onSubmit={this.onSubmit}>
-                    <div className="form-group">
-                      <label htmlFor="username">Email Address</label>
-                      <div className="input-group">
-                        <div className="input-icon">
-                          <i className="fas fa-envelope"></i>
-                        </div>
+              <form onSubmit={this.onSubmit} autoComplete="on">
+                <div className="form-floating mb-3">
                         <input
                           type="text"
-                          className={classnames("form-control", {
-                            "is-invalid": errors.username
-                          })}
-                          placeholder="Enter your email"
+                    className={classnames("form-control", {"is-invalid": errors.username})}
+                    placeholder="Email Address"
                           name="username"
                           id="username"
                           value={this.state.username}
                           onChange={this.onChange}
+                    autoFocus
                         />
+                  <label htmlFor="username">Email Address</label>
                         {errors.username && (
                           <div className="invalid-feedback">{errors.username}</div>
                         )}
                       </div>
-                    </div>
-                    <div className="form-group">
-                      <div className="label-row">
-                        <label htmlFor="password">Password</label>
-                        <Link to="/forgot-password" className="forgot-link">Forgot Password?</Link>
-                      </div>
-                      <div className="input-group">
-                        <div className="input-icon">
-                          <i className="fas fa-lock"></i>
-                        </div>
+                <div className="form-floating mb-3 position-relative">
                         <input
                           type={showPassword ? "text" : "password"}
-                          className={classnames("form-control", {
-                            "is-invalid": errors.password
-                          })}
-                          placeholder="Enter your password"
+                    className={classnames("form-control", {"is-invalid": errors.password})}
+                    placeholder="Password"
                           name="password"
                           id="password"
                           value={this.state.password}
                           onChange={this.onChange}
                         />
-                        <div className="password-toggle" onClick={this.togglePasswordVisibility}>
+                  <label htmlFor="password">Password</label>
+                  <button type="button" className="btn btn-link password-toggle-adv" tabIndex={-1} onClick={this.togglePasswordVisibility} aria-label="Show/Hide password">
                           <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
-                        </div>
+                  </button>
                         {errors.password && (
                           <div className="invalid-feedback">{errors.password}</div>
                         )}
                       </div>
-                    </div>
-                    <div className="form-group">
-                      <div className="checkbox-wrapper">
-                        <input type="checkbox" id="rememberMe" />
-                        <label htmlFor="rememberMe">
-                          Remember me on this device
-                        </label>
-                      </div>
-                    </div>
-                    <button 
-                      type="submit" 
-                      className={`submit-btn ${isLoading ? 'loading' : ''}`}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <span className="spinner">
-                            <i className="fas fa-circle-notch fa-spin"></i>
-                          </span>
-                          <span>Signing In...</span>
-                        </>
-                      ) : (
-                        <>
-                          <i className="fas fa-sign-in-alt"></i>
-                          <span>Sign In</span>
-                        </>
-                      )}
-                    </button>
-                  </form>
-                  <div className="signup-link">
-                    <p>
-                      Don't have an account?{" "}
-                      <Link to="/register">
-                        Create Account
-                      </Link>
-                    </p>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div className="form-check">
+                    <input type="checkbox" className="form-check-input" id="rememberMe" />
+                    <label className="form-check-label" htmlFor="rememberMe">Remember me</label>
                   </div>
+                  <Link to="/forgot-password" className="forgot-link">Forgot Password?</Link>
                 </div>
-                <div className="card-footer">
-                  <i className="fas fa-lock"></i>
-                  <span>Secure login with 256-bit encryption</span>
+                <button type="submit" className="btn btn-primary w-100 mb-3" disabled={isLoading}>
+                  {isLoading ? <span className="spinner-border spinner-border-sm me-2"></span> : <i className="fas fa-sign-in-alt me-2"></i>}
+                  {isLoading ? "Logging in..." : "Login"}
+                </button>
+                <div className="text-center mt-2">
+                  <span className="text-muted">Don't have an account?</span> <Link to="/register">Sign Up</Link>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
-        
-        <style jsx>{`
-          .login {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 2rem 0;
-            position: relative;
-            overflow: hidden;
+        <style>{`
+          .login-outer {
+            background: var(--color-bg);
           }
-          
-          .login-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
+          .login-advanced-card {
+            background: rgba(255,255,255,0.8);
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(31,38,135,0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--color-border);
+            max-width: 850px;
             width: 100%;
-            height: 100%;
-            background: var(--gradient-primary);
-            z-index: -1;
-          }
-          
-          .login-animated-shape {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-          }
-          
-          .shape1 {
-            width: 600px;
-            height: 600px;
-            bottom: -300px;
-            right: -150px;
-            animation: float 25s infinite ease-in-out;
-          }
-          
-          .shape2 {
-            width: 400px;
-            height: 400px;
-            top: -200px;
-            left: -150px;
-            animation: float 20s infinite ease-in-out reverse;
-          }
-          
-          .shape3 {
-            width: 300px;
-            height: 300px;
-            top: 30%;
-            right: 20%;
-            animation: float 18s infinite ease-in-out;
-            animation-delay: -5s;
-          }
-          
-          .shape4 {
-            width: 200px;
-            height: 200px;
-            bottom: 20%;
-            left: 20%;
-            animation: float 15s infinite ease-in-out reverse;
-            animation-delay: -8s;
-          }
-          
-          @keyframes float {
-            0%, 100% {
-              transform: translateY(0) rotate(0deg);
-            }
-            25% {
-              transform: translateY(-30px) rotate(5deg);
-            }
-            50% {
-              transform: translateY(0) rotate(0deg);
-            }
-            75% {
-              transform: translateY(30px) rotate(-5deg);
-            }
-          }
-          
-          .login-card {
-            background-color: var(--card-bg);
-            border-radius: 20px;
+            min-height: 420px;
             overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            transition: all 0.3s ease;
-            transform: translateY(20px);
-            opacity: 0;
-            animation: slideUp 0.5s ease forwards;
+            display: flex;
+            flex-direction: row;
+            animation: fadeIn 0.8s cubic-bezier(.39,.575,.56,1.000) both;
           }
-          
-          @keyframes slideUp {
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
+          [data-theme="dark"] .login-advanced-card {
+            background: rgba(24,24,24,0.92);
+            color: var(--color-pure-snow);
           }
-          
-          .card-header {
-            padding: 2.5rem 2rem 1.5rem;
-            background: rgba(0, 0, 0, 0.02);
-            border-bottom: 1px solid var(--border-color);
-            text-align: center;
+          .login-visual-section {
+            background: var(--color-clouded-pearl);
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
           }
-          
-          [data-theme="dark"] .card-header {
-            background: rgba(255, 255, 255, 0.02);
+          [data-theme="dark"] .login-visual-section {
+            background: var(--color-silver-slate);
           }
-          
+          .login-visual-content img {
+            max-width: 90%;
+            border-radius: 1.2rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+          }
+          .login-form-section {
+            background: transparent;
+            min-width: 320px;
+            max-width: 400px;
+            margin: 0 auto;
+          }
           .brand-icon {
-            width: 80px;
-            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: var(--gradient-primary);
-            color: white;
-            font-size: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            background: var(--color-clouded-pearl);
+            margin: 0 auto 1rem auto;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
           }
-          
-          .card-header h2 {
-            color: var(--text);
+          [data-theme="dark"] .brand-icon {
+            background: var(--color-silver-slate);
+          }
+          .heading-college {
+            font-family: 'Merriweather', 'Georgia', 'Times New Roman', serif;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+          }
+          .google-btn {
+            background: var(--color-clouded-pearl);
+            color: var(--color-midnight-mist);
+            border: 1px solid var(--color-border);
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            font-size: 1.75rem;
+            border-radius: 2rem;
+            transition: background 0.2s, color 0.2s;
           }
-          
-          .card-header p {
-            color: var(--text-muted);
-            margin-bottom: 0;
+          .google-btn:hover {
+            background: var(--color-secondary);
+            color: var(--color-pure-snow);
           }
-          
-          .card-body {
-            padding: 2rem;
-          }
-          
-          .alert-message {
-            display: flex;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            animation: slideDown 0.3s ease forwards;
-            transition: all 0.3s ease;
-            transform: translateY(-20px);
-            opacity: 0;
-          }
-          
-          @keyframes slideDown {
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          
-          .alert-message.warning {
-            background-color: rgba(var(--warning), 0.1);
-            border-left: 3px solid var(--warning);
-          }
-          
-          .alert-message.danger {
-            background-color: rgba(var(--danger), 0.1);
-            border-left: 3px solid var(--danger);
-          }
-          
-          .alert-icon {
-            width: 24px;
-            margin-right: 1rem;
+          .divider {
             display: flex;
             align-items: center;
-            justify-content: center;
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
+            margin: 1.5rem 0;
           }
-          
-          .alert-message.warning .alert-icon {
-            color: var(--warning);
-          }
-          
-          .alert-message.danger .alert-icon {
-            color: var(--danger);
-          }
-          
-          .alert-content {
+          .divider::before, .divider::after {
+            content: '';
             flex: 1;
+            border-bottom: 1px solid var(--color-border);
+            margin: 0 0.75em;
           }
-          
-          .alert-content strong {
+          .form-floating > label {
+            color: var(--color-text-muted);
             font-weight: 600;
-            display: block;
-            margin-bottom: 0.25rem;
+            left: 1.1rem;
           }
-          
-          .alert-content ul {
-            margin: 0;
-            padding-left: 1.5rem;
-            font-size: 0.9rem;
+          .form-floating > .form-control:focus ~ label {
+            color: var(--color-primary);
           }
-          
-          .form-group {
-            margin-bottom: 1.5rem;
+          .form-control {
+            background: var(--color-card-bg);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: 1rem;
+            transition: border 0.2s, box-shadow 0.2s;
+            font-size: 1.08rem;
           }
-          
-          label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text);
+          .form-control:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-primary)22;
           }
-          
-          .label-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
+          .form-control.is-invalid {
+            border-color: #e74a3b;
           }
-          
-          .forgot-link {
-            font-size: 0.85rem;
-            color: var(--primary);
-            text-decoration: none;
-            transition: all 0.2s ease;
-          }
-          
-          .forgot-link:hover {
-            color: var(--primary-dark);
-            text-decoration: underline;
-          }
-          
-          .input-group {
-            position: relative;
-          }
-          
-          .input-icon {
+          .password-toggle-adv {
+            color: var(--color-secondary);
+            border: none;
+            background: transparent;
+            font-size: 1.1rem;
             position: absolute;
-            left: 15px;
+            right: 1.2rem;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-muted);
-            transition: all 0.3s ease;
             z-index: 2;
           }
-          
-          .form-control {
-            height: 50px;
-            padding-left: 45px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            background-color: var(--card-bg);
-            color: var(--text);
-            box-shadow: none;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-          }
-          
-          .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(var(--primary), 0.2);
-          }
-          
-          .form-control:focus + .input-icon {
-            color: var(--primary);
-          }
-          
-          .form-control::placeholder {
-            color: var(--text-muted);
-            opacity: 0.6;
-          }
-          
-          .invalid-feedback {
-            display: block;
-            width: 100%;
-            margin-top: 0.25rem;
-            font-size: 80%;
-            color: var(--danger);
-          }
-          
-          .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            cursor: pointer;
-            z-index: 5;
-            transition: all 0.2s ease;
-          }
-          
-          .password-toggle:hover {
-            color: var(--primary);
-          }
-          
-          .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-          }
-          
-          .checkbox-wrapper input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-          }
-          
-          .checkbox-wrapper label {
-            position: relative;
-            padding-left: 30px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-bottom: 0;
-            color: var(--text-muted);
-            font-weight: 400;
-          }
-          
-          .checkbox-wrapper label:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 5px;
-            transition: all 0.2s ease;
-          }
-          
-          .checkbox-wrapper input:checked + label:before {
-            background-color: var(--primary);
-            border-color: var(--primary);
-          }
-          
-          .checkbox-wrapper input:focus + label:before {
-            box-shadow: 0 0 0 3px rgba(var(--primary), 0.2);
-          }
-          
-          .checkbox-wrapper label:after {
-            content: '';
-            position: absolute;
-            left: 7px;
-            top: 4px;
-            width: 6px;
-            height: 10px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-            opacity: 0;
-            transition: all 0.2s ease;
-          }
-          
-          .checkbox-wrapper input:checked + label:after {
-            opacity: 1;
-          }
-          
-          .submit-btn {
-            width: 100%;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--gradient-primary);
-            color: white;
+          .btn-primary {
+            border-radius: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: var(--color-primary);
+            color: var(--color-pure-snow);
             border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            padding: 0 1.5rem;
-            margin-top: 1rem;
-            box-shadow: 0 4px 10px rgba(var(--primary), 0.2);
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+            transition: background 0.3s, color 0.3s, box-shadow 0.2s;
           }
-          
-          .submit-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(var(--primary), 0.3);
+          .btn-primary:hover {
+            background: var(--color-secondary);
+            color: var(--color-midnight-mist);
+            transform: translateY(-2px) scale(1.03);
           }
-          
-          .submit-btn:active {
-            transform: translateY(-1px);
-          }
-          
-          .submit-btn i {
-            margin-right: 0.75rem;
-            font-size: 1rem;
-          }
-          
-          .submit-btn.loading {
-            opacity: 0.8;
-            cursor: not-allowed;
-          }
-          
-          .spinner {
-            margin-right: 0.75rem;
-            animation: spin 1s linear infinite;
-          }
-          
-          @keyframes spin {
-            0% {
-              transform: rotate(0deg);
-            }
-            100% {
-              transform: rotate(360deg);
-            }
-          }
-          
-          .signup-link {
-            text-align: center;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
-          }
-          
-          .signup-link p {
-            margin-bottom: 0;
-            color: var(--text-muted);
-          }
-          
-          .signup-link a {
-            color: var(--primary);
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-          }
-          
-          .signup-link a:hover {
+          .forgot-link {
+            color: var(--color-secondary);
+            font-size: 0.95rem;
             text-decoration: underline;
           }
-          
-          .card-footer {
-            background: rgba(0, 0, 0, 0.02);
-            padding: 1rem;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            border-top: 1px solid var(--border-color);
+          .forgot-link:hover {
+            color: var(--color-primary);
           }
-          
-          [data-theme="dark"] .card-footer {
-            background: rgba(255, 255, 255, 0.02);
+          .alert {
+            font-size: 1rem;
+            border-radius: 1rem;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);
           }
-          
-          .card-footer i {
-            margin-right: 0.5rem;
+          .alert-danger {
+            background: rgba(231,74,59,0.08);
+            color: #e74a3b;
+            border: 1px solid #e74a3b33;
+          }
+          .alert-warning {
+            background: rgba(255,193,7,0.10);
+            color: #856404;
+            border: 1px solid #ffeeba;
+          }
+          @media (max-width: 900px) {
+            .login-advanced-card {
+              flex-direction: column;
+              min-height: unset;
+            }
+            .login-visual-section {
+              min-height: 180px;
+              padding: 2rem 0;
+            }
+          }
+          @media (max-width: 576px) {
+            .login-form-section {
+              padding: 1.2rem !important;
+            }
+            .login-advanced-card {
+              border-radius: 1.2rem;
+              padding: 0.5rem;
+            }
           }
         `}</style>
       </div>
@@ -672,8 +364,8 @@ class Login extends Component {
 
 Login.propTypes = {
   login: PropTypes.func.isRequired,
-  errors: PropTypes.object.isRequired,
-  security: PropTypes.object.isRequired
+  security: PropTypes.object.isRequired,
+  errors: PropTypes.object.isRequired
 };
 
 const mapStateToProps = state => ({
@@ -681,7 +373,4 @@ const mapStateToProps = state => ({
   errors: state.errors
 });
 
-export default connect(
-  mapStateToProps,
-  { login }
-)(Login);
+export default connect(mapStateToProps, { login })(Login);

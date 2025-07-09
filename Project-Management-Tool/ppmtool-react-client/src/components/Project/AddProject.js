@@ -23,17 +23,17 @@ class AddProject extends Component {
   }
 
   //life cycle hooks
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.errors) {
+  componentDidUpdate(prevProps) {
+    if (prevProps.errors !== this.props.errors && this.props.errors) {
       // Handle case where error is a string
-      if (typeof nextProps.errors === 'string') {
+      if (typeof this.props.errors === 'string') {
         this.setState({ 
           errors: { 
-            general: nextProps.errors 
+            general: this.props.errors 
           } 
         });
       } else {
-        this.setState({ errors: nextProps.errors });
+        this.setState({ errors: this.props.errors });
       }
     }
   }

@@ -26,7 +26,7 @@ class TeamManage extends Component {
     this.setState({ loading: false });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.errors) {
       this.setState({ errors: nextProps.errors });
     }

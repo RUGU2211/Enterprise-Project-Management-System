@@ -14,21 +14,23 @@ import UpdateProjectTask from "./components/ProjectBoard/ProjectTasks/UpdateProj
 import Landing from "./components/Layout/Landing";
 import Register from "./components/UserManagement/Register";
 import Login from "./components/UserManagement/Login";
+import About from "./components/Layout/About";
+import Contact from "./components/Layout/Contact";
+import Privacy from "./components/Layout/Privacy";
 import jwt_decode from "jwt-decode";
 import setJWTToken from "./securityUtils/setJWTToken";
 import { SET_CURRENT_USER } from "./actions/types";
 import { logout } from "./actions/securityActions";
 import SecureRoute from "./securityUtils/SecureRoute";
-import Teams from "./components/Team/Teams";
-import CreateTeam from "./components/Team/CreateTeam";
-import TeamDetails from "./components/Team/TeamDetails";
 import TeamDashboard from "./components/Team/TeamDashboard";
 import UpdateTeam from "./components/Team/UpdateTeam";
-import TeamBoard from "./components/Team/TeamBoard";
 import Profile from "./components/UserManagement/Profile";
 import TeamManage from "./components/Team/TeamManage";
 import BoardManager from "./components/BoardManager/BoardManager";
 import ProjectManager from "./components/Dashboard/ProjectManager";
+import CreateTeam from "./components/Team/CreateTeam";
+import AnimatedBackground from "./components/common/AnimatedBackground";
+import Footer from './components/Layout/Footer';
 
 // Background controller component
 class BackgroundController extends Component {
@@ -99,38 +101,44 @@ class App extends Component {
       <Provider store={store}>
         <Router>
           <BackgroundControllerWithRouter>
-            <div className="App">
-              {/* Background pattern */}
-              <div className="bg-pattern"></div>
+            <div className="App d-flex flex-column min-vh-100">
+              {/* Enhanced Animated Background */}
+              <AnimatedBackground />
               
               <Header />
-              <Switch>
-                {/* Public Routes */}
-                <Route exact path="/" component={Landing} />
-                <Route exact path="/register" component={Register} />
-                <Route exact path="/login" component={Login} />
+              <div className="main-content fade-in">
+                <Switch>
+                  {/* Public Routes */}
+                  <Route exact path="/" component={Landing} />
+                  <Route exact path="/register" component={Register} />
+                  <Route exact path="/login" component={Login} />
+                  <Route exact path="/about" component={About} />
+                  <Route exact path="/contact" component={Contact} />
+                  <Route exact path="/privacy" component={Privacy} />
 
-                {/* Private Routes */}
-                <SecureRoute exact path="/dashboard" component={Dashboard} />
-                <SecureRoute exact path="/addProject" component={AddProject} />
-                <SecureRoute exact path="/updateProject/:id" component={UpdateProject} />
-                <SecureRoute exact path="/projectBoard/:id" component={ProjectBoard} />
-                <SecureRoute exact path="/addProjectTask/:id" component={AddProjectTask} />
-                <SecureRoute exact path="/updateProjectTask/:backlog_id/:pt_id" component={UpdateProjectTask} />
-                
-                {/* Team Management Routes */}
-                <SecureRoute exact path="/teams" component={TeamDashboard} />
-                <SecureRoute exact path="/createTeam" component={CreateTeam} />
-                <SecureRoute exact path="/team/:id" component={TeamManage} />
-                <SecureRoute exact path="/boardManager" component={BoardManager} />
-                <SecureRoute exact path="/updateTeam/:id" component={UpdateTeam} />
-                
-                {/* User Profile Route */}
-                <SecureRoute exact path="/profile" component={Profile} />
+                  {/* Private Routes */}
+                  <SecureRoute exact path="/dashboard" component={Dashboard} />
+                  <SecureRoute exact path="/addProject" component={AddProject} />
+                  <SecureRoute exact path="/updateProject/:id" component={UpdateProject} />
+                  <SecureRoute exact path="/projectBoard/:id" component={ProjectBoard} />
+                  <SecureRoute exact path="/addProjectTask/:id" component={AddProjectTask} />
+                  <SecureRoute exact path="/updateProjectTask/:backlog_id/:pt_id" component={UpdateProjectTask} />
+                  
+                  {/* Team Management Routes */}
+                  <SecureRoute exact path="/teams" component={TeamDashboard} />
+                  <SecureRoute exact path="/createTeam" component={CreateTeam} />
+                  <SecureRoute exact path="/team/:id" component={TeamManage} />
+                  <SecureRoute exact path="/boardManager" component={BoardManager} />
+                  <SecureRoute exact path="/updateTeam/:id" component={UpdateTeam} />
+                  
+                  {/* User Profile Route */}
+                  <SecureRoute exact path="/profile" component={Profile} />
 
-                {/* New Project Manager Route */}
-                <SecureRoute exact path="/projectManager" component={ProjectManager} />
-              </Switch>
+                  {/* New Project Manager Route */}
+                  <SecureRoute exact path="/projectManager" component={ProjectManager} />
+                </Switch>
+              </div>
+              <Footer />
             </div>
           </BackgroundControllerWithRouter>
         </Router>

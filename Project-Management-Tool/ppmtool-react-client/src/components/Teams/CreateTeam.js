@@ -20,7 +20,7 @@ class CreateTeam extends Component {
   }
 
   // Life cycle hook
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.errors) {
       this.setState({ errors: nextProps.errors });
     }

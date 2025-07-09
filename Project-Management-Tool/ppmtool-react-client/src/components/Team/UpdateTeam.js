@@ -26,7 +26,7 @@ class UpdateTeam extends Component {
     this.props.getTeam(id, this.props.history);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.errors) {
       this.setState({ errors: nextProps.errors });
     }
@@ -69,28 +69,6 @@ class UpdateTeam extends Component {
 
   render() {
     const { errors } = this.state;
-    
-    const iconOptions = [
-      { value: "users", display: "Users Group" },
-      { value: "user-friends", display: "Friends" },
-      { value: "laptop-code", display: "Development" },
-      { value: "tasks", display: "Tasks" },
-      { value: "project-diagram", display: "Project" },
-      { value: "bug", display: "QA/Testing" },
-      { value: "rocket", display: "Launch" },
-      { value: "chart-line", display: "Analytics" }
-    ];
-    
-    const colorOptions = [
-      "#3f51b5", // Indigo
-      "#2196f3", // Blue
-      "#00bcd4", // Cyan
-      "#009688", // Teal
-      "#4caf50", // Green
-      "#ff9800", // Orange
-      "#f44336", // Red
-      "#9c27b0"  // Purple
-    ];
 
     return (
       <div className="update-team">

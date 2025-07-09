@@ -35,7 +35,6 @@ const ProjectTimeline = ({ projects }) => {
         
         const isCompleted = endDate && now > endDate;
         const isActive = startDate <= now && (!endDate || now <= endDate);
-        const isUpcoming = startDate > now;
         
         let statusClass;
         if (isCompleted) {

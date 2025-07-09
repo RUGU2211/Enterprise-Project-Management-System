@@ -33,7 +33,7 @@ class UpdateProjectTask extends Component {
     this.props.getProjectTask(backlog_id, pt_id, this.props.history);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.errors) {
       this.setState({ errors: nextProps.errors });
     }
